@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kletterliga</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="container header">
+    <div>
+      <h1 id="seasonTitle">Kletterliga</h1>
+      <p class="muted" id="seasonMeta">Stand: –</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" aria-label="Rangliste">
+      <div class="cardHeader">
+        <h2>Rangliste</h2>
+        <div class="legend">
+          <span>✅ 1P</span><span>❌ 0P</span><span>⏳ nachgeholt</span><span>— offen</span><span>🚫 nicht möglich</span>
+        </div>
+      </div>
+      <div id="leaderboard"></div>
+    </section>
+
+    <section class="card" aria-label="Fairness">
+      <div class="cardHeader">
+        <h2>Fairness</h2>
+      </div>
+      <div id="fairness"></div>
+    </section>
+
+    <section class="card" aria-label="Challenges">
+      <div class="cardHeader">
+        <h2>Challenges (neueste zuerst)</h2>
+      </div>
+      <div id="challenges"></div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <p class="muted">Privater Wettbewerb · Daten aus <code>data.json</code></p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

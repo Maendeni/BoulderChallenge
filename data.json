@@ -1,0 +1,48 @@
+{
+  "season": {
+    "name": "Kletterliga 2026",
+    "start": "2026-01-01",
+    "end": "2026-06-30"
+  },
+  "participants": [
+    { "id": "marco", "name": "Marco" },
+    { "id": "alex", "name": "Alex" },
+    { "id": "luca", "name": "Luca" },
+    { "id": "tom", "name": "Tom" },
+    { "id": "sara", "name": "Sara" }
+  ],
+  "challenges": [
+    {
+      "id": "2026-02-12",
+      "date": "2026-02-12",
+      "label": "KW 07",
+      "route": "Schwarz 6c – Dach rechts",
+      "setBy": "sara",
+      "removedFrom": null,
+      "notes": "Zwei Crux-Züge am Anfang",
+      "results": {
+        "marco": { "status": "success", "when": "live" },
+        "alex": { "status": "success", "when": "live" },
+        "luca": { "status": "fail", "when": "live" },
+        "tom": { "status": "open", "when": "" },
+        "sara": { "status": "fail", "when": "live" }
+      }
+    },
+    {
+      "id": "2026-02-05",
+      "date": "2026-02-05",
+      "label": "KW 06",
+      "route": "Grün 6a – Platte Mitte",
+      "setBy": "alex",
+      "removedFrom": "2026-02-10",
+      "notes": "Wird am 10.02 neu geschraubt.",
+      "results": {
+        "marco": { "status": "success", "when": "live" },
+        "alex": { "status": "success", "when": "live" },
+        "luca": { "status": "open", "when": "" },
+        "tom": { "status": "fail", "when": "live" },
+        "sara": { "status": "open", "when": "" }
+      }
+    }
+  ]
+}
