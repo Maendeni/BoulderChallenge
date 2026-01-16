@@ -1,47 +1,47 @@
 {
   "season": {
-    "name": "Kletterliga 2026",
-    "start": "2026-01-01",
+    "name": "Boulder-Challenge 25/26",
+    "start": "2025-09-17",
     "end": "2026-06-30"
   },
   "participants": [
-    { "id": "marco", "name": "Marco" },
-    { "id": "alex", "name": "Alex" },
-    { "id": "luca", "name": "Luca" },
-    { "id": "tom", "name": "Tom" },
-    { "id": "sara", "name": "Sara" }
+    { "id": "Dan", "name": "Dan" },
+    { "id": "Geo", "name": "Geo" },
+    { "id": "Flo", "name": "Flo" },
+    { "id": "Mar", "name": "Mar" },
+    { "id": "Sab", "name": "Sab" }
   ],
   "challenges": [
     {
-      "id": "2026-02-12",
-      "date": "2026-02-12",
-      "label": "KW 07",
-      "route": "Schwarz 6c – Dach rechts",
-      "setBy": "sara",
+      "id": "2025-09-16",
+      "date": "2025-09-16",
+      "label": "Nr. 1",
+      "route": "...",
+      "setBy": "Dan",
       "removedFrom": null,
-      "notes": "Zwei Crux-Züge am Anfang",
+      "notes": "...",
       "results": {
-        "marco": { "status": "success", "when": "live" },
-        "alex": { "status": "success", "when": "live" },
-        "luca": { "status": "fail", "when": "live" },
-        "tom": { "status": "open", "when": "" },
-        "sara": { "status": "fail", "when": "live" }
+        "Dan": { "status": "success", "when": "live" },
+        "Geo": { "status": "fail", "when": "live" },
+        "Flo": { "status": "fail", "when": "live" },
+        "Mar": { "status": "success", "when": "live" },
+        "Sab": { "status": "fail", "when": "live" }
       }
     },
     {
-      "id": "2026-02-05",
-      "date": "2026-02-05",
-      "label": "KW 06",
-      "route": "Grün 6a – Platte Mitte",
-      "setBy": "alex",
-      "removedFrom": "2026-02-10",
-      "notes": "Wird am 10.02 neu geschraubt.",
+      "id": "2025-09-24",
+      "date": "2025-09-24",
+      "label": "Nr. 2",
+      "route": "...",
+      "setBy": "Geo",
+      "removedFrom": null,
+      "notes": "...",
       "results": {
-        "marco": { "status": "success", "when": "live" },
-        "alex": { "status": "success", "when": "live" },
-        "luca": { "status": "open", "when": "" },
-        "tom": { "status": "fail", "when": "live" },
-        "sara": { "status": "open", "when": "" }
+        "Dan": { "status": "fail", "when": "live" },
+        "Geo": { "status": "success", "when": "live" },
+        "Flo": { "status": "success", "when": "live" },
+        "Mar": { "status": "success", "when": "live" },
+        "Sab": { "status": "fail", "when": "live" }
       }
     }
   ]

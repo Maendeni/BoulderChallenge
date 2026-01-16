@@ -9,21 +9,26 @@
 <body>
   <header class="container header">
     <div>
-      <h1 id="seasonTitle">Kletterliga</h1>
+      <h1 id="seasonTitle">Boulder-Challenge</h1>
       <p class="muted" id="seasonMeta">Stand: –</p>
     </div>
   </header>
 
   <main class="container">
-    <section class="card" aria-label="Rangliste">
-      <div class="cardHeader">
-        <h2>Rangliste</h2>
-        <div class="legend">
-          <span>✅ 1P</span><span>❌ 0P</span><span>⏳ nachgeholt</span><span>— offen</span><span>🚫 nicht möglich</span>
-        </div>
+<section class="card" aria-label="Rangliste">
+  <div class="cardHeader">
+    <h2>Rangliste</h2>
+
+    <details class="legendDetails">
+      <summary>Legende</summary>
+      <div class="legend">
+        <span>✅ 1P</span><span>❌ 0P</span><span>⏳ nachgeholt</span><span>— offen</span><span>🚫 nicht möglich</span>
       </div>
-      <div id="leaderboard"></div>
-    </section>
+    </details>
+  </div>
+  <div id="leaderboard"></div>
+</section>
+
 
     <section class="card" aria-label="Fairness">
       <div class="cardHeader">
@@ -34,7 +39,7 @@
 
     <section class="card" aria-label="Challenges">
       <div class="cardHeader">
-        <h2>Challenges (neueste zuerst)</h2>
+        <h2>Challenges</h2>
       </div>
       <div id="challenges"></div>
     </section>

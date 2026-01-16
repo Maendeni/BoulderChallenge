@@ -160,3 +160,45 @@ code{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 0.95em;
 }
+
+.legendDetails summary{
+  cursor:pointer;
+  color: var(--muted);
+  font-size: 12px;
+  user-select:none;
+}
+
+.leaderCards{
+  display:none;
+  gap:10px;
+}
+
+.leaderCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  background: rgba(255,255,255,0.02);
+}
+
+.leaderTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.leaderName{
+  font-weight:700;
+}
+
+.leaderSub{
+  margin-top:8px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+@media (max-width: 520px){
+  .table{ display:none; }
+  .leaderCards{ display:grid; }
+}

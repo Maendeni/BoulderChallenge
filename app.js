@@ -97,7 +97,7 @@ async function main() {
 function renderLeaderboard(rows) {
   const el = document.getElementById("leaderboard");
 
-  const html = `
+  const tableHtml = `
     <table class="table">
       <thead>
         <tr>
@@ -124,34 +124,55 @@ function renderLeaderboard(rows) {
     </table>
   `;
 
-  el.innerHTML = html;
+  const cardsHtml = `
+    <div class="leaderCards">
+      ${rows.map((r, idx) => `
+        <div class="leaderCard">
+          <div class="leaderTop">
+            <div>
+              <div class="leaderName">${idx + 1}) ${safeText(r.name)}</div>
+            </div>
+            <span class="badge badgeAccent">${r.points} P</span>
+          </div>
+
+          <div class="leaderSub">
+            <span class="badge">Definiert: ${r.defined}</span>
+            <span class="badge">Offen: ${r.openPossible}</span>
+            <span class="badge">Nicht möglich: ${r.openImpossible}</span>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  el.innerHTML = tableHtml + cardsHtml;
 }
+
 
 function renderFairness(rows) {
   const el = document.getElementById("fairness");
-  const definedValues = rows.map(r => r.defined);
+
+  const byName = rows
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, "de"));
+
+  const definedValues = byName.map(r => r.defined);
   const min = Math.min(...definedValues, 0);
   const max = Math.max(...definedValues, 0);
   const diff = max - min;
 
-  const line = rows
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name, "de"))
-    .map(r => `${r.name}: ${r.defined}`)
-    .join(" · ");
+  const line = byName.map(r => `${r.name}: ${r.defined}`).join(" · ");
 
-  let hint = "ok";
-  if (diff >= 2) hint = `Achtung: Unterschied max/min = ${diff}`;
-  else hint = `Unterschied max/min = ${diff} (ok)`;
+  const warning = diff >= 2
+    ? `<div class="kv"><span class="badge badgeAccent">Achtung: ungleich verteilt</span></div>`
+    : ``;
 
   el.innerHTML = `
-    <div class="kv">
-      <span class="badge">Verteilung</span>
-      <span class="badge badgeAccent">${hint}</span>
-    </div>
-    <p class="muted" style="margin-top:10px;">${safeText(line)}</p>
+    ${warning}
+    <p class="muted" style="margin-top:${warning ? "10px" : "0"};">${safeText(line)}</p>
   `;
 }
+
 
 function renderChallenges(challenges, participants, pidToName, now) {
   const el = document.getElementById("challenges");
