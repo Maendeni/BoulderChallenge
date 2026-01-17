@@ -202,3 +202,119 @@ code{
   .table{ display:none; }
   .leaderCards{ display:grid; }
 }
+
+.adminDetails summary{
+  cursor:pointer;
+  color: var(--text);
+  font-size: 14px;
+  user-select:none;
+}
+
+.adminGrid{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+@media (max-width: 520px){
+  .adminGrid{ grid-template-columns: 1fr; }
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.fieldWide{
+  grid-column: 1 / -1;
+}
+
+.field span{
+  font-size:12px;
+  color: var(--muted);
+}
+
+.field input, .field select{
+  width:100%;
+  padding:10px 10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background: rgba(0,0,0,0.2);
+  color: var(--text);
+  outline: none;
+}
+
+.adminBlock{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+}
+
+.adminBlockTitle{
+  font-size:12px;
+  color: var(--muted);
+  margin-bottom:10px;
+}
+
+.adminResults{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap:8px;
+}
+
+@media (max-width: 520px){
+  .adminResults{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.resultBtn{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  background: rgba(255,255,255,0.02);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  color: var(--text);
+}
+
+.resultBtn small{ color: var(--muted); font-weight:600; }
+
+.adminActions{
+  margin-top:12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.btn, .btnPrimary{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor:pointer;
+}
+
+.btnPrimary{
+  border-color: rgba(56, 189, 248, 0.45);
+}
+.btn:active, .btnPrimary:active{ transform: translateY(1px); }
+
+.adminTextarea{
+  width:100%;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background: rgba(0,0,0,0.25);
+  color: var(--text);
+  padding:10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.adminActions .btn, .adminActions .btnPrimary{
+  flex: 1 1 auto;
+}
