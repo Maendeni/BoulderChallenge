@@ -28,6 +28,130 @@
   ],
   "challenges": [
     {
+      "id": "2026-01-14",
+      "date": "2026-01-14",
+      "label": "KW 03",
+      "route": "Gelbe 8 im Eggä bim Iigang",
+      "setBy": "Mar",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "open",
+          "when": ""
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-01-07",
+      "date": "2026-01-07",
+      "label": "KW 02",
+      "route": "Gelbe 8 neuer Bereich",
+      "setBy": "Flo",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2025-12-17",
+      "date": "2025-12-17",
+      "label": "KW 51",
+      "route": "Graue 8 im Überhang",
+      "setBy": "Dan",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2025-12-10",
+      "date": "2025-12-10",
+      "label": "KW 50",
+      "route": "Gelbe 7 im Eggä bim Iigang",
+      "setBy": "Mar",
+      "removedFrom": "2026-01-06",
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2025-12-03",
       "date": "2025-12-03",
       "label": "KW 49",
