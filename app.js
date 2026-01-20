@@ -4,7 +4,7 @@ function parseISODate(s) {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
-// Berechnet die ISO-Kalenderwoche (KW) für ein Datum im Format YYYY-MM-DD.
+// ISO-Kalenderwoche (KW) für Datum YYYY-MM-DD (UTC, um TZ-Probleme zu vermeiden)
 function getIsoWeek(dateString) {
   if (!dateString) return null;
   const [y, m, d] = dateString.split("-").map(Number);
@@ -24,14 +24,14 @@ function todayUTC() {
 }
 
 function fmtDate(iso) {
-  return iso; // bewusst schlicht; ISO ist eindeutig
+  return iso; // ISO bleibt am klarsten
 }
 
 function statusToIcon(status, when, effectiveImpossible) {
   if (effectiveImpossible) return "🚫";
-  if (status === "success") return (when === "makeup" ? "⏳✅" : "✅");
-  if (status === "fail") return (when === "makeup" ? "⏳❌" : "❌");
-  return "—"; // open / unknown
+  if (status === "success") return (when === "makeup" ? "✅⏳" : "✅");
+  if (status === "fail") return (when === "makeup" ? "❌⏳" : "❌");
+  return "—";
 }
 
 function pointsFor(status, effectiveImpossible) {
@@ -43,7 +43,7 @@ function computeEffectiveImpossible(challenge, status, now) {
   if (status !== "open") return false;
   if (!challenge.removedFrom) return false;
   const removed = parseISODate(challenge.removedFrom);
-  return now >= removed; // ab diesem Datum nicht mehr möglich
+  return now >= removed;
 }
 
 function byNewestFirst(a, b) {
@@ -87,7 +87,8 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     const label = getWeekLabel(ch);
     const initial = getSetterInitial(ch, pidToName);
     const cls = (ch.id === latestId) ? "weekCell weekCellLatest" : "weekCell";
-    return `<div class="${cls}" title="${safeText(ch.route ?? "")}">${safeText(label)} ${safeText(initial)}</div>`;
+    const title = `${fmtDate(ch.date)} · ${safeText(ch.route ?? "")}`;
+    return `<div class="${cls}" title="${safeText(title)}">${safeText(label)} ${safeText(initial)}</div>`;
   }).join("");
 
   const playersHtml = leaderboardRows.map(r => {
@@ -97,15 +98,20 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
       const when = res.when ?? "";
       const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
       const icon = statusToIcon(status, when, effectiveImpossible);
-      const cls = "iconCell" + ((ch.id === latestId) ? " weekCellLatest" : "");
+      const cls = (ch.id === latestId) ? "iconCell weekCellLatest" : "iconCell";
       return `<div class="${cls}">${icon}</div>`;
     }).join("");
 
     return `
       <div class="playerBlock">
-        <div class="playerName">
-          <span>${safeText(r.name)}</span>
-          <span class="badge badgeAccent">${r.points} P</span>
+        <div class="playerNameRow">
+          <div class="playerName">${safeText(r.name)}</div>
+          <div class="playerBadges">
+            <span class="badge badgeAccent">${r.points} P</span>
+            <span class="badge">Def.: ${r.defined}</span>
+            <span class="badge">Offen: ${r.openPossible}</span>
+            <span class="badge">🚫: ${r.openImpossible}</span>
+          </div>
         </div>
 
         <div class="playerRow">
@@ -115,12 +121,6 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
               ${iconCells}
             </div>
           </div>
-        </div>
-
-        <div class="playerMeta">
-          <span class="badge">Def.: ${r.defined}</span>
-          <span class="badge">Offen: ${r.openPossible}</span>
-          <span class="badge">🚫: ${r.openImpossible}</span>
         </div>
       </div>
     `;
@@ -196,12 +196,11 @@ function wireJumpButtons() {
 function computeAndRenderAll(data) {
   const now = todayUTC();
 
-  // Header
-  document.getElementById("seasonTitle").textContent = data.season?.name ?? "Kletterliga";
+  document.getElementById("seasonTitle").textContent = data.season?.name ?? "Boulder-Challenge";
 
   const allChallenges = data.challenges ?? [];
-  const challengesDesc = [...allChallenges].sort(byNewestFirst); // für Karten
-  const challengesAsc = [...allChallenges].sort(byOldestFirst);  // für Matrix
+  const challengesDesc = [...allChallenges].sort(byNewestFirst);
+  const challengesAsc = [...allChallenges].sort(byOldestFirst);
 
   const latestDate = challengesDesc[0]?.date ?? null;
   document.getElementById("seasonMeta").textContent =
@@ -210,7 +209,6 @@ function computeAndRenderAll(data) {
   const participants = data.participants ?? [];
   const pidToName = Object.fromEntries(participants.map(p => [p.id, p.name]));
 
-  // Aggregation
   const stats = Object.fromEntries(participants.map(p => [
     p.id,
     { id: p.id, name: p.name, points: 0, defined: 0, openPossible: 0, openImpossible: 0 }
@@ -234,7 +232,6 @@ function computeAndRenderAll(data) {
     }
   }
 
-  // Leaderboard (Zeilenreihenfolge)
   const leaderboard = Object.values(stats).sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
     return a.name.localeCompare(b.name, "de");
@@ -242,7 +239,6 @@ function computeAndRenderAll(data) {
 
   renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, now);
   renderChallenges(challengesDesc, participants, pidToName, now);
-
   renderAdmin(data, participants);
 
   window.__DATA__ = data;
@@ -258,14 +254,12 @@ function renderChallenges(challenges, participants, pidToName, now) {
     const removed = ch.removedFrom ? `Route entfernt ab: ${fmtDate(ch.removedFrom)}` : "Route entfernt ab: —";
 
     const top = `
-      <div class="challengeTop">
-        <div>
-          <div class="challengeTitle">${safeText(ch.label ?? "")} · ${fmtDate(ch.date)}</div>
-          <div class="challengeMeta">Route: ${safeText(ch.route ?? "—")}</div>
-          <div class="challengeMeta">Definiert von: ${safeText(setByName)}</div>
-          <div class="challengeMeta">${removed}</div>
-          ${ch.notes ? `<div class="challengeMeta">Notiz: ${safeText(ch.notes)}</div>` : ``}
-        </div>
+      <div>
+        <div class="challengeTitle">${safeText(ch.label ?? "")} · ${fmtDate(ch.date)}</div>
+        <div class="challengeMeta">Route: ${safeText(ch.route ?? "—")}</div>
+        <div class="challengeMeta">Definiert von: ${safeText(setByName)}</div>
+        <div class="challengeMeta">${removed}</div>
+        ${ch.notes ? `<div class="challengeMeta">Notiz: ${safeText(ch.notes)}</div>` : ``}
       </div>
     `;
 
@@ -279,9 +273,7 @@ function renderChallenges(challenges, participants, pidToName, now) {
 
       return `
         <div class="personChip">
-          <div>
-            <div class="personName">${safeText(p.name)}</div>
-          </div>
+          <div class="personName">${safeText(p.name)}</div>
           <div class="personStatus" aria-label="Status">${icon}</div>
         </div>
       `;
@@ -303,15 +295,10 @@ function renderChallenges(challenges, participants, pidToName, now) {
 function renderAdmin(data, participants) {
   window.__DATA__ = data;
 
-  // Dropdown "Definiert von" (aktualisieren)
   const setBy = document.getElementById("admSetBy");
-  if (setBy) {
-    setBy.innerHTML = participants.map(p => `<option value="${p.id}">${safeText(p.name)}</option>`).join("");
-  }
+  if (setBy) setBy.innerHTML = participants.map(p => `<option value="${p.id}">${safeText(p.name)}</option>`).join("");
 
-  // Draft laden oder initialisieren
-  const existingDraft = loadDraft(participants);
-  const draft = existingDraft ?? (() => {
+  const draft = loadDraft(participants) ?? (() => {
     const d = new Date();
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -334,7 +321,7 @@ function renderAdmin(data, participants) {
 
   applyDraftToUi(draft, participants);
 
-  // Event-Handler nur einmal binden (Bugfix: keine mehrfachen Popups)
+  // Bugfix: Handler nur einmal binden (sonst doppelte Popups)
   if (!window.__adminWired) {
     wireAdminHandlers(participants);
     window.__adminWired = true;
@@ -368,7 +355,7 @@ function wireAdminHandlers(participants) {
     el.addEventListener("change", syncDraft);
   });
 
-  // Wenn das Datum geändert wird, automatisch das Label (ISO-KW) setzen.
+  // Datum geändert -> Label automatisch setzen (KW)
   if (elDate && elLabel) {
     elDate.addEventListener("change", () => {
       const week = getIsoWeek(elDate.value);
@@ -381,7 +368,7 @@ function wireAdminHandlers(participants) {
     btnReset.addEventListener("click", () => {
       localStorage.removeItem("kletterliga_data_local");
       clearDraft();
-      location.reload(); // lädt wieder die echte data.json von GitHub
+      location.reload();
     });
   }
 
@@ -409,12 +396,10 @@ function wireAdminHandlers(participants) {
       };
 
       data.challenges = data.challenges ?? [];
-      data.challenges.unshift(ch); // lokale Liste ist "neueste zuerst" – passt gut fürs JSON
+      data.challenges.unshift(ch);
 
-      // Lokale Arbeitskopie speichern (damit nach Refresh nichts verloren geht)
       localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
 
-      // Draft reset für nächste Eingabe
       const week = getIsoWeek(draft.date);
       const nextLabel = week ? `KW ${String(week).padStart(2, "0")}` : "";
       const fresh = {
@@ -429,7 +414,6 @@ function wireAdminHandlers(participants) {
       saveDraft(fresh);
       applyDraftToUi(fresh, participants);
 
-      // UI aktualisieren (ohne Reload)
       computeAndRenderAll(data);
     });
   }
@@ -472,8 +456,8 @@ function applyDraftToUi(draft, participants) {
   const box = document.getElementById("admResults");
   box.innerHTML = participants.map(p => {
     const r = draft.results?.[p.id] ?? { status: "open", when: "" };
-    const icon = (r.status === "success" ? (r.when === "makeup" ? "⏳✅" : "✅")
-               : r.status === "fail"    ? (r.when === "makeup" ? "⏳❌" : "❌")
+    const icon = (r.status === "success" ? (r.when === "makeup" ? "✅⏳" : "✅")
+               : r.status === "fail"    ? (r.when === "makeup" ? "❌⏳" : "❌")
                : "—");
     return `
       <button class="resultBtn" type="button" data-pid="${p.id}">
@@ -483,14 +467,13 @@ function applyDraftToUi(draft, participants) {
     `;
   }).join("");
 
-  // Toggle-Handler: — -> ✅ -> ❌ -> —
+  // Toggle: — -> ✅ -> ❌ -> —
   box.querySelectorAll(".resultBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pid = btn.getAttribute("data-pid");
       const d = readDraftFromUi(participants);
 
       const cur = d.results[pid] ?? { status: "open", when: "" };
-
       const next = (cur.status === "open") ? "success"
                  : (cur.status === "success") ? "fail"
                  : "open";
@@ -501,7 +484,7 @@ function applyDraftToUi(draft, participants) {
       saveDraft(d);
       applyDraftToUi(d, participants);
       updateAdminPreview(window.__DATA__);
-      location.hash = "#"; // iOS: verhindert manchmal stuck focus
+      location.hash = "#";
     });
   });
 }
@@ -522,10 +505,8 @@ function readDraftFromUi(participants) {
 function updateAdminPreview(data) {
   const el = document.getElementById("admJson");
   if (!el) return;
-
   const d = data ?? window.__DATA__;
   if (!d) return;
-
   el.value = JSON.stringify(d, null, 2);
 }
 
@@ -559,7 +540,7 @@ async function main() {
   const res = await fetch("data.json", { cache: "no-store" });
   let data = await res.json();
 
-  // Wenn lokale Arbeitskopie existiert, verwende sie (damit nach Refresh nichts verloren geht)
+  // lokale Arbeitskopie verwenden (damit Änderungen nach Refresh bleiben)
   const local = localStorage.getItem("kletterliga_data_local");
   if (local) {
     try { data = JSON.parse(local); } catch {}
