@@ -23,7 +23,7 @@ h2{ font-size:16px; margin:0; }
   background:var(--card);
   border:1px solid var(--line);
   border-radius:16px;
-  padding:14px;
+  padding:12px;
   margin:12px 0;
   box-shadow: 0 8px 22px rgba(0,0,0,0.25);
 }
@@ -35,6 +35,20 @@ h2{ font-size:16px; margin:0; }
   margin-bottom:10px;
 }
 
+.cardHeaderRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.legendDetails summary{
+  cursor:pointer;
+  color: var(--muted);
+  font-size: 12px;
+  user-select:none;
+}
+
 .legend{
   display:flex;
   flex-wrap:wrap;
@@ -43,47 +57,17 @@ h2{ font-size:16px; margin:0; }
   color:var(--muted);
 }
 
-.table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-.table th, .table td{
-  text-align:left;
-  padding:10px 8px;
-  border-top:1px solid var(--line);
-  vertical-align:top;
-}
-.table th{
-  color:var(--muted);
-  font-weight:600;
-  font-size:12px;
-  padding-top:0;
-  border-top:none;
-}
-
-.rank{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:26px;
-  height:26px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  color:var(--muted);
-  font-size:12px;
-}
-
 .badge{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:4px 10px;
+  padding:3px 8px;
   border-radius:999px;
   border:1px solid var(--line);
   color:var(--muted);
-  font-size:12px;
+  font-size:11px;
   white-space:nowrap;
+  line-height:1.2;
 }
 
 .badgeAccent{
@@ -91,6 +75,130 @@ h2{ font-size:16px; margin:0; }
   color: var(--text);
 }
 
+code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.95em;
+}
+
+/* ---- Jump Buttons ---- */
+.matrixJump{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.btnSmall{
+  padding:7px 9px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor:pointer;
+  font-size:12px;
+}
+.btnSmall:active{ transform: translateY(1px); }
+
+/* ---- Ranglisten-Matrix ---- */
+.matrix{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.matrixHeaderRow{
+  display:flex;
+  gap:10px;
+  align-items:stretch;
+}
+
+.matrixNameCol{
+  width: 96px;
+  min-width: 96px;
+  flex: 0 0 96px;
+  color: var(--muted);
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  padding-left:2px;
+}
+
+.matrixScroll{
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  border-radius:12px;
+}
+
+.weekRow, .iconRow{
+  display:flex;
+  gap:6px;
+  padding:4px 2px;
+}
+
+.weekCell{
+  min-width: 56px;
+  height: 26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--line);
+  border-radius:12px;
+  font-size:11px;
+  color: var(--muted);
+  background: rgba(0,0,0,0.18);
+  white-space:nowrap;
+}
+
+.weekCellLatest{
+  border-color: rgba(56, 189, 248, 0.45);
+  color: var(--text);
+}
+
+.playerBlock{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.playerNameRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.playerName{
+  font-weight:700;
+  font-size:14px;
+}
+
+.playerBadges{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:6px;
+}
+
+.playerRow{
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+}
+
+.iconCell{
+  min-width: 56px;
+  height: 32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background: rgba(0,0,0,0.18);
+  font-size:14px;
+}
+
+/* ---- Challenges ---- */
 .challengeCard{
   border:1px solid var(--line);
   border-radius:14px;
@@ -99,16 +207,11 @@ h2{ font-size:16px; margin:0; }
   background: rgba(255,255,255,0.02);
 }
 
-.challengeTop{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
-}
 .challengeTitle{
   font-weight:700;
   font-size:14px;
 }
+
 .challengeMeta{
   color:var(--muted);
   font-size:12px;
@@ -129,7 +232,7 @@ h2{ font-size:16px; margin:0; }
 .personChip{
   border:1px solid var(--line);
   border-radius:12px;
-  padding:10px 10px;
+  padding:9px 10px;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -147,62 +250,7 @@ h2{ font-size:16px; margin:0; }
   font-size:16px;
 }
 
-.kv{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
-
-.kv .badge{ padding:4px 8px; }
-
-code{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.95em;
-}
-
-.legendDetails summary{
-  cursor:pointer;
-  color: var(--muted);
-  font-size: 12px;
-  user-select:none;
-}
-
-.leaderCards{
-  display:none;
-  gap:10px;
-}
-
-.leaderCard{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px;
-  background: rgba(255,255,255,0.02);
-}
-
-.leaderTop{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-}
-
-.leaderName{
-  font-weight:700;
-}
-
-.leaderSub{
-  margin-top:8px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
-@media (max-width: 520px){
-  .table{ display:none; }
-  .leaderCards{ display:grid; }
-}
-
+/* ---- Admin ---- */
 .adminDetails summary{
   cursor:pointer;
   color: var(--text);
@@ -276,7 +324,7 @@ code{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:8px;
+  gap:10px;
   cursor:pointer;
   color: var(--text);
 }
@@ -299,10 +347,10 @@ code{
   cursor:pointer;
 }
 
-.btnPrimary{
-  border-color: rgba(56, 189, 248, 0.45);
-}
+.btnPrimary{ border-color: rgba(56, 189, 248, 0.45); }
 .btn:active, .btnPrimary:active{ transform: translateY(1px); }
+
+.adminActions .btn, .adminActions .btnPrimary{ flex: 1 1 auto; }
 
 .adminTextarea{
   width:100%;
@@ -315,143 +363,13 @@ code{
   font-size: 12px;
 }
 
-.adminActions .btn, .adminActions .btnPrimary{
-  flex: 1 1 auto;
-}
-
-/* ---- Ranglisten-Matrix ---- */
-.cardHeaderRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.matrixJump{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-.btnSmall{
-  padding:8px 10px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background: rgba(255,255,255,0.02);
-  color: var(--text);
-  cursor:pointer;
-  font-size:12px;
-}
-.btnSmall:active{ transform: translateY(1px); }
-
-.matrix{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.matrixHeaderRow{
-  display:flex;
-  gap:10px;
-  align-items:stretch;
-}
-
-.matrixNameCol{
-  width: 120px;
-  min-width: 120px;
-  flex: 0 0 120px;
-  color: var(--muted);
-  font-size:12px;
-  display:flex;
-  align-items:center;
-  padding-left:4px;
-}
-
-.matrixScroll{
-  overflow-x:auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  border-radius:12px;
-}
-
-.weekRow{
-  display:flex;
-  gap:8px;
-  padding:6px 2px;
-}
-
-.weekCell{
-  min-width: 72px;
-  height: 34px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid var(--line);
-  border-radius:12px;
-  font-size:12px;
-  color: var(--muted);
-  background: rgba(0,0,0,0.18);
-  white-space:nowrap;
-}
-
-.weekCellLatest{
-  border-color: rgba(56, 189, 248, 0.45);
-  color: var(--text);
-}
-
-.playerBlock{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px;
-  background: rgba(255,255,255,0.02);
-}
-
-.playerName{
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.playerRow{
-  display:flex;
-  gap:10px;
-  margin-top:8px;
-}
-
-.iconRow{
-  display:flex;
-  gap:8px;
-  padding:6px 2px;
-}
-
-.iconCell{
-  min-width: 72px;
-  height: 44px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background: rgba(0,0,0,0.18);
-  font-size:18px;
-}
-
-.playerMeta{
-  margin-top:10px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
+/* ---- Extra mobile compaction ---- */
 @media (max-width: 520px){
-  .matrixNameCol{
-    width: 92px;
-    min-width: 92px;
-    flex: 0 0 92px;
-  }
-  .weekCell, .iconCell{
-    min-width: 60px;
-  }
+  .card{ padding:10px; }
+  .matrixNameCol{ width: 78px; min-width:78px; flex: 0 0 78px; }
+  .weekCell{ min-width: 50px; font-size:10px; }
+  .iconCell{ min-width: 50px; height: 30px; font-size:13px; }
+  .playerBlock{ padding:9px; }
+  .playerName{ font-size:13px; }
+  .badge{ font-size:10.5px; padding:3px 7px; }
 }
