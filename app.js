@@ -4,19 +4,15 @@ function parseISODate(s) {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
-// Berechnet die ISO‑Kalenderwoche (KW) für ein Datum im Format YYYY‑MM‑DD.
-// Die Kalenderwoche folgt der ISO‑8601 Definition, bei der die erste Woche
-// diejenige ist, die den ersten Donnerstag enthält. Gibt eine Zahl zwischen
-// 1 und 53 zurück. Bei ungültigen oder leeren Eingaben wird null geliefert.
+// Berechnet die ISO-Kalenderwoche (KW) für ein Datum im Format YYYY-MM-DD.
 function getIsoWeek(dateString) {
   if (!dateString) return null;
-  // Verwende UTC, um Zeitzonenverschiebungen zu vermeiden
-  const [y, m, d] = dateString.split('-').map(Number);
+  const [y, m, d] = dateString.split("-").map(Number);
   if (!y || !m || !d) return null;
+
   const dt = new Date(Date.UTC(y, m - 1, d));
-  // Donnerstag ermitteln
-  const day = dt.getUTCDay() || 7; // Sonntag = 0 => 7
-  dt.setUTCDate(dt.getUTCDate() + 4 - day);
+  const day = dt.getUTCDay() || 7; // Sonntag=0 -> 7
+  dt.setUTCDate(dt.getUTCDate() + 4 - day); // Donnerstag der Woche
   const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
   const weekNo = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
   return weekNo;
@@ -54,9 +50,148 @@ function byNewestFirst(a, b) {
   return parseISODate(b.date) - parseISODate(a.date);
 }
 
+function byOldestFirst(a, b) {
+  return parseISODate(a.date) - parseISODate(b.date);
+}
+
 function safeText(s) {
   return String(s ?? "");
 }
+
+/* ---------------- Rangliste (Matrix) ---------------- */
+
+function getWeekLabel(ch) {
+  if (ch.label && String(ch.label).trim()) return String(ch.label).trim();
+  const week = getIsoWeek(ch.date);
+  if (!week) return "";
+  return `KW ${String(week).padStart(2, "0")}`;
+}
+
+function getSetterInitial(ch, pidToName) {
+  const name = pidToName[ch.setBy] ?? ch.setBy ?? "";
+  const c = String(name).trim().charAt(0);
+  return c ? c.toUpperCase() : "";
+}
+
+function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, pidToName, now) {
+  const el = document.getElementById("leaderboard");
+
+  if (!challengesAsc.length) {
+    el.innerHTML = `<p class="muted">Noch keine Challenges erfasst.</p>`;
+    return;
+  }
+
+  const latestId = challengesAsc[challengesAsc.length - 1]?.id;
+
+  const headerCells = challengesAsc.map(ch => {
+    const label = getWeekLabel(ch);
+    const initial = getSetterInitial(ch, pidToName);
+    const cls = (ch.id === latestId) ? "weekCell weekCellLatest" : "weekCell";
+    return `<div class="${cls}" title="${safeText(ch.route ?? "")}">${safeText(label)} ${safeText(initial)}</div>`;
+  }).join("");
+
+  const playersHtml = leaderboardRows.map(r => {
+    const iconCells = challengesAsc.map(ch => {
+      const res = (ch.results ?? {})[r.id] ?? { status: "open", when: "" };
+      const status = res.status ?? "open";
+      const when = res.when ?? "";
+      const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
+      const icon = statusToIcon(status, when, effectiveImpossible);
+      const cls = "iconCell" + ((ch.id === latestId) ? " weekCellLatest" : "");
+      return `<div class="${cls}">${icon}</div>`;
+    }).join("");
+
+    return `
+      <div class="playerBlock">
+        <div class="playerName">
+          <span>${safeText(r.name)}</span>
+          <span class="badge badgeAccent">${r.points} P</span>
+        </div>
+
+        <div class="playerRow">
+          <div class="matrixNameCol"></div>
+          <div class="matrixScroll" data-matrix-scroll="1">
+            <div class="iconRow">
+              ${iconCells}
+            </div>
+          </div>
+        </div>
+
+        <div class="playerMeta">
+          <span class="badge">Def.: ${r.defined}</span>
+          <span class="badge">Offen: ${r.openPossible}</span>
+          <span class="badge">🚫: ${r.openImpossible}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="matrix">
+      <div class="matrixHeaderRow">
+        <div class="matrixNameCol">Teilnehmer</div>
+        <div class="matrixScroll" data-matrix-scroll="1">
+          <div class="weekRow">
+            ${headerCells}
+          </div>
+        </div>
+      </div>
+
+      <div class="matrixBody">
+        ${playersHtml}
+      </div>
+    </div>
+  `;
+
+  wireMatrixScrollSync();
+  wireJumpButtons();
+}
+
+function wireMatrixScrollSync() {
+  const scrollers = Array.from(document.querySelectorAll('.matrixScroll[data-matrix-scroll="1"]'));
+  window.__matrixScrollEls = scrollers;
+
+  let syncing = false;
+
+  scrollers.forEach(sc => {
+    sc.addEventListener("scroll", () => {
+      if (syncing) return;
+      syncing = true;
+      const x = sc.scrollLeft;
+      scrollers.forEach(other => {
+        if (other !== sc) other.scrollLeft = x;
+      });
+      syncing = false;
+    }, { passive: true });
+  });
+}
+
+function wireJumpButtons() {
+  // Nur einmal binden
+  if (window.__jumpWired) return;
+  window.__jumpWired = true;
+
+  const btnStart = document.getElementById("jumpStart");
+  const btnLatest = document.getElementById("jumpLatest");
+
+  if (btnStart) {
+    btnStart.addEventListener("click", () => {
+      const els = window.__matrixScrollEls ?? [];
+      els.forEach(el => { el.scrollLeft = 0; });
+    });
+  }
+
+  if (btnLatest) {
+    btnLatest.addEventListener("click", () => {
+      const els = window.__matrixScrollEls ?? [];
+      const ref = els[0];
+      const max = ref ? (ref.scrollWidth - ref.clientWidth) : 0;
+      els.forEach(el => { el.scrollLeft = max; });
+    });
+  }
+}
+
+/* ---------------- Gesamtrender ---------------- */
 
 function computeAndRenderAll(data) {
   const now = todayUTC();
@@ -64,8 +199,11 @@ function computeAndRenderAll(data) {
   // Header
   document.getElementById("seasonTitle").textContent = data.season?.name ?? "Kletterliga";
 
-  const challengesSorted = [...(data.challenges ?? [])].sort(byNewestFirst);
-  const latestDate = challengesSorted[0]?.date ?? null;
+  const allChallenges = data.challenges ?? [];
+  const challengesDesc = [...allChallenges].sort(byNewestFirst); // für Karten
+  const challengesAsc = [...allChallenges].sort(byOldestFirst);  // für Matrix
+
+  const latestDate = challengesDesc[0]?.date ?? null;
   document.getElementById("seasonMeta").textContent =
     latestDate ? `Stand: ${fmtDate(latestDate)}` : "Stand: –";
 
@@ -78,7 +216,7 @@ function computeAndRenderAll(data) {
     { id: p.id, name: p.name, points: 0, defined: 0, openPossible: 0, openImpossible: 0 }
   ]));
 
-  for (const ch of challengesSorted) {
+  for (const ch of allChallenges) {
     if (ch.setBy && stats[ch.setBy]) stats[ch.setBy].defined += 1;
 
     const results = ch.results ?? {};
@@ -96,106 +234,21 @@ function computeAndRenderAll(data) {
     }
   }
 
-  // Leaderboard
+  // Leaderboard (Zeilenreihenfolge)
   const leaderboard = Object.values(stats).sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    if (b.defined !== a.defined) return b.defined - a.defined;
     return a.name.localeCompare(b.name, "de");
   });
 
-  // Rangliste mitsamt Fairness-Hinweis anzeigen. Es gibt keine separate Fairness-Karte mehr.
-  renderLeaderboard(leaderboard);
-  renderChallenges(challengesSorted, participants, pidToName, now);
+  renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, now);
+  renderChallenges(challengesDesc, participants, pidToName, now);
 
   renderAdmin(data, participants);
-  updateAdminPreview(data);
 
   window.__DATA__ = data;
 }
 
-async function main() {
-  const res = await fetch("data.json", { cache: "no-store" });
-  let data = await res.json();
-
-  // Wenn lokale Arbeitskopie existiert, verwende sie (damit nichts verloren geht)
-  const local = localStorage.getItem("kletterliga_data_local");
-  if (local) {
-    try { data = JSON.parse(local); } catch {}
-  }
-
-  window.__DATA__ = data;
-  computeAndRenderAll(data);
-}
-
-function renderLeaderboard(rows) {
-  const el = document.getElementById("leaderboard");
-
-  const tableHtml = `
-    <table class="table">
-      <thead>
-        <tr>
-          <th style="width:52px;">#</th>
-          <th>Name</th>
-          <th style="width:80px;">Punkte</th>
-          <th style="width:110px;">Definiert</th>
-          <th style="width:120px;">Offen</th>
-          <th style="width:140px;">Nicht möglich</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map((r, idx) => `
-          <tr>
-            <td><span class="rank">${idx + 1}</span></td>
-            <td>${safeText(r.name)}</td>
-            <td><span class="badge badgeAccent">${r.points} P</span></td>
-            <td><span class="badge">${r.defined}</span></td>
-            <td><span class="badge">${r.openPossible}</span></td>
-            <td><span class="badge">${r.openImpossible}</span></td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-
-  const cardsHtml = `
-    <div class="leaderCards">
-      ${rows.map((r, idx) => `
-        <div class="leaderCard">
-          <div class="leaderTop">
-            <div>
-              <div class="leaderName">${idx + 1}) ${safeText(r.name)}</div>
-            </div>
-            <span class="badge badgeAccent">${r.points} P</span>
-          </div>
-
-          <div class="leaderSub">
-            <span class="badge">Definiert: ${r.defined}</span>
-            <span class="badge">Offen: ${r.openPossible}</span>
-            <span class="badge">Nicht möglich: ${r.openImpossible}</span>
-          </div>
-        </div>
-      `).join("")}
-    </div>
-  `;
-
-  // Berechne Fairness-Hinweis: Wenn die Differenz der Anzahl definierter Routen
-  // (maximal definierte minus minimal definierte) grösser als eins ist, wird
-  // ein Hinweis ausgegeben. Früher wurde dafür eine separate Fairness-Karte genutzt.
-  const definedValues = rows.map(r => r.defined);
-  const minDefined = Math.min(...definedValues);
-  const maxDefined = Math.max(...definedValues);
-  const diffDefined = maxDefined - minDefined;
-  let fairnessHtml = "";
-  if (diffDefined > 1) {
-    const diffText = diffDefined === 1 ? "1 Route" : `${diffDefined} Routen`;
-    fairnessHtml = `
-      <div class="kv" style="margin-top:10px;">
-        <span class="badge badgeAccent">Achtung: ungleich verteilt (Differenz: ${diffText})</span>
-      </div>
-    `;
-  }
-  el.innerHTML = tableHtml + cardsHtml + fairnessHtml;
-}
+/* ---------------- Challenges (Karten) ---------------- */
 
 function renderChallenges(challenges, participants, pidToName, now) {
   const el = document.getElementById("challenges");
@@ -245,155 +298,167 @@ function renderChallenges(challenges, participants, pidToName, now) {
   el.innerHTML = cards || `<p class="muted">Noch keine Challenges erfasst.</p>`;
 }
 
-main().catch(err => {
-  console.error(err);
-  document.getElementById("challenges").innerHTML =
-    `<p class="muted">Fehler beim Laden von <code>data.json</code>.</p>`;
-});
+/* ---------------- Admin ---------------- */
 
 function renderAdmin(data, participants) {
-  // Dropdown "Definiert von"
+  window.__DATA__ = data;
+
+  // Dropdown "Definiert von" (aktualisieren)
   const setBy = document.getElementById("admSetBy");
-  setBy.innerHTML = participants.map(p => `<option value="${p.id}">${safeText(p.name)}</option>`).join("");
-
-  // Default Datum = heute (lokal)
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  document.getElementById("admDate").value = `${yyyy}-${mm}-${dd}`;
-
-  // Ergebnisse initial: open
-  const draft = loadDraft(participants) ?? {
-    date: document.getElementById("admDate").value,
-    label: "",
-    route: "",
-    setBy: participants[0]?.id ?? "",
-    removedFrom: "",
-    notes: "",
-    results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
-  };
-
-  // Wenn kein Label gesetzt ist, die Kalenderwoche der gewählten Challenge automatisch setzen.
-  if (!draft.label && draft.date) {
-    const week = getIsoWeek(draft.date);
-    if (week) {
-      const wkStr = String(week).padStart(2, "0");
-      draft.label = `KW ${wkStr}`;
-    }
+  if (setBy) {
+    setBy.innerHTML = participants.map(p => `<option value="${p.id}">${safeText(p.name)}</option>`).join("");
   }
 
-  // Draft ins UI
+  // Draft laden oder initialisieren
+  const existingDraft = loadDraft(participants);
+  const draft = existingDraft ?? (() => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const date = `${yyyy}-${mm}-${dd}`;
+
+    const week = getIsoWeek(date);
+    const label = week ? `KW ${String(week).padStart(2, "0")}` : "";
+
+    return {
+      date,
+      label,
+      route: "",
+      setBy: participants[0]?.id ?? "",
+      removedFrom: "",
+      notes: "",
+      results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
+    };
+  })();
+
   applyDraftToUi(draft, participants);
-  wireAdminHandlers(data, participants);
-  updateAdminPreview(data);
+
+  // Event-Handler nur einmal binden (Bugfix: keine mehrfachen Popups)
+  if (!window.__adminWired) {
+    wireAdminHandlers(participants);
+    window.__adminWired = true;
+  }
+
+  updateAdminPreview(window.__DATA__);
 }
 
-function wireAdminHandlers(data, participants) {
+function wireAdminHandlers(participants) {
   const elDate = document.getElementById("admDate");
   const elLabel = document.getElementById("admLabel");
   const elRoute = document.getElementById("admRoute");
   const elSetBy = document.getElementById("admSetBy");
   const elRemoved = document.getElementById("admRemovedFrom");
   const elNotes = document.getElementById("admNotes");
-  document.getElementById("admResetLocal").addEventListener("click", () => {
-    localStorage.removeItem("kletterliga_data_local");
-    clearDraft();
-    location.reload(); // lädt wieder die echte data.json von GitHub
-  });
+
+  const btnAdd = document.getElementById("admAdd");
+  const btnCopy = document.getElementById("admCopy");
+  const btnDownload = document.getElementById("admDownload");
+  const btnReset = document.getElementById("admResetLocal");
 
   const syncDraft = () => {
     const draft = readDraftFromUi(participants);
     saveDraft(draft);
-    updateAdminPreview(data);
+    updateAdminPreview(window.__DATA__);
   };
 
   [elDate, elLabel, elRoute, elSetBy, elRemoved, elNotes].forEach(el => {
+    if (!el) return;
     el.addEventListener("input", syncDraft);
     el.addEventListener("change", syncDraft);
   });
 
-  // Wenn das Datum geändert wird, automatisch das Label mit der ISO‑Kalenderwoche befüllen.
-  const updateLabelForDate = () => {
-    const dateVal = elDate.value;
-    const week = getIsoWeek(dateVal);
-    if (week) {
-      const wkStr = String(week).padStart(2, "0");
-      elLabel.value = `KW ${wkStr}`;
-    }
-  };
-  elDate.addEventListener("change", () => {
-    updateLabelForDate();
-    syncDraft();
-  });
+  // Wenn das Datum geändert wird, automatisch das Label (ISO-KW) setzen.
+  if (elDate && elLabel) {
+    elDate.addEventListener("change", () => {
+      const week = getIsoWeek(elDate.value);
+      if (week) elLabel.value = `KW ${String(week).padStart(2, "0")}`;
+      syncDraft();
+    });
+  }
 
-  document.getElementById("admAdd").addEventListener("click", () => {
-    const draft = readDraftFromUi(participants);
+  if (btnReset) {
+    btnReset.addEventListener("click", () => {
+      localStorage.removeItem("kletterliga_data_local");
+      clearDraft();
+      location.reload(); // lädt wieder die echte data.json von GitHub
+    });
+  }
 
-    // Minimalvalidierung
-    if (!draft.date || !draft.route || !draft.setBy) {
-      alert("Bitte mindestens Datum, Route und 'Definiert von' ausfüllen.");
-      return;
-    }
+  if (btnAdd) {
+    btnAdd.addEventListener("click", () => {
+      const data = window.__DATA__;
+      if (!data) return;
 
-    // Challenge Objekt bauen
-    const ch = {
-      id: draft.date,
-      date: draft.date,
-      label: draft.label || "",
-      route: draft.route,
-      setBy: draft.setBy,
-      removedFrom: draft.removedFrom || null,
-      notes: draft.notes || "",
-      results: draft.results
-    };
+      const draft = readDraftFromUi(participants);
 
-    // Challenge einmalig am Anfang einfügen (neueste zuerst)
-    data.challenges = data.challenges ?? [];
-    data.challenges.unshift(ch);
+      if (!draft.date || !draft.route || !draft.setBy) {
+        alert("Bitte mindestens Datum, Route und 'Definiert von' ausfüllen.");
+        return;
+      }
 
-    // Lokale Arbeitskopie speichern (damit nach Refresh nichts verloren geht)
-    localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
+      const ch = {
+        id: draft.date,
+        date: draft.date,
+        label: draft.label || "",
+        route: draft.route,
+        setBy: draft.setBy,
+        removedFrom: draft.removedFrom || null,
+        notes: draft.notes || "",
+        results: draft.results
+      };
 
-    // Draft reset für nächste Eingabe (optional, aber praktisch)
-    clearDraft();
-    const fresh = {
-      date: draft.date,
-      label: "",
-      route: "",
-      setBy: draft.setBy,
-      removedFrom: "",
-      notes: "",
-      results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
-    };
-    applyDraftToUi(fresh, participants);
-    saveDraft(fresh);
+      data.challenges = data.challenges ?? [];
+      data.challenges.unshift(ch); // lokale Liste ist "neueste zuerst" – passt gut fürs JSON
 
-    // UI sofort aktualisieren (ohne Reload)
-    computeAndRenderAll(data);
-  });
+      // Lokale Arbeitskopie speichern (damit nach Refresh nichts verloren geht)
+      localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
 
-  document.getElementById("admCopy").addEventListener("click", async () => {
-    const jsonText = document.getElementById("admJson").value;
-    try {
-      await navigator.clipboard.writeText(jsonText);
-      alert("JSON kopiert. Jetzt in GitHub in data.json einfügen und committen.");
-    } catch {
-      alert("Kopieren nicht möglich. Bitte Textfeld manuell markieren und kopieren.");
-    }
-  });
+      // Draft reset für nächste Eingabe
+      const week = getIsoWeek(draft.date);
+      const nextLabel = week ? `KW ${String(week).padStart(2, "0")}` : "";
+      const fresh = {
+        date: draft.date,
+        label: nextLabel,
+        route: "",
+        setBy: draft.setBy,
+        removedFrom: "",
+        notes: "",
+        results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
+      };
+      saveDraft(fresh);
+      applyDraftToUi(fresh, participants);
 
-  document.getElementById("admDownload").addEventListener("click", () => {
-    const jsonText = document.getElementById("admJson").value;
-    const blob = new Blob([jsonText], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "data.json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
-  });
+      // UI aktualisieren (ohne Reload)
+      computeAndRenderAll(data);
+    });
+  }
+
+  if (btnCopy) {
+    btnCopy.addEventListener("click", async () => {
+      const jsonText = document.getElementById("admJson")?.value ?? "";
+      try {
+        await navigator.clipboard.writeText(jsonText);
+        alert("JSON kopiert. Jetzt in GitHub in data.json einfügen und committen.");
+      } catch {
+        alert("Kopieren nicht möglich. Bitte Textfeld manuell markieren und kopieren.");
+      }
+    });
+  }
+
+  if (btnDownload) {
+    btnDownload.addEventListener("click", () => {
+      const jsonText = document.getElementById("admJson")?.value ?? "";
+      const blob = new Blob([jsonText], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "data.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    });
+  }
 }
 
 function applyDraftToUi(draft, participants) {
@@ -426,25 +491,19 @@ function applyDraftToUi(draft, participants) {
 
       const cur = d.results[pid] ?? { status: "open", when: "" };
 
-      // cycle status
       const next = (cur.status === "open") ? "success"
                  : (cur.status === "success") ? "fail"
                  : "open";
 
       d.results[pid] = { status: next, when: cur.when || "" };
-
-      // Wenn status open, dann when leeren
       if (next === "open") d.results[pid].when = "";
 
       saveDraft(d);
-      applyDraftToUi(d, participants); // re-render buttons
-      updateAdminPreview(window.__DATA__ ?? null); // fallback
+      applyDraftToUi(d, participants);
+      updateAdminPreview(window.__DATA__);
       location.hash = "#"; // iOS: verhindert manchmal stuck focus
     });
   });
-
-  // Kleine Hilfe: data im window halten, damit updateAdminPreview sicher ist
-  window.__DATA__ = window.__DATA__ ?? null;
 }
 
 function readDraftFromUi(participants) {
@@ -457,22 +516,17 @@ function readDraftFromUi(participants) {
 
   const saved = loadDraft(participants);
   const results = saved?.results ?? Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]));
-
   return { date, label, route, setBy, removedFrom, notes, results };
 }
 
 function updateAdminPreview(data) {
-  // Wenn data nicht übergeben, versuchen aus window zu lesen
   const el = document.getElementById("admJson");
   if (!el) return;
 
-  // data.json soll "challenges" neueste zuerst enthalten
-  // Wir sortieren nicht hart um, weil wir in main sowieso sortieren; fürs File ist neueste zuerst nice.
-  const jsonText = JSON.stringify(data, null, 2);
-  el.value = jsonText;
+  const d = data ?? window.__DATA__;
+  if (!d) return;
 
-  // window cache
-  window.__DATA__ = data;
+  el.value = JSON.stringify(d, null, 2);
 }
 
 function loadDraft(participants) {
@@ -481,7 +535,6 @@ function loadDraft(participants) {
     if (!raw) return null;
     const d = JSON.parse(raw);
 
-    // ensure results for all participants
     d.results = d.results ?? {};
     for (const p of participants) {
       if (!d.results[p.id]) d.results[p.id] = { status: "open", when: "" };
@@ -499,3 +552,25 @@ function saveDraft(draft) {
 function clearDraft() {
   localStorage.removeItem("kletterliga_admin_draft");
 }
+
+/* ---------------- Boot ---------------- */
+
+async function main() {
+  const res = await fetch("data.json", { cache: "no-store" });
+  let data = await res.json();
+
+  // Wenn lokale Arbeitskopie existiert, verwende sie (damit nach Refresh nichts verloren geht)
+  const local = localStorage.getItem("kletterliga_data_local");
+  if (local) {
+    try { data = JSON.parse(local); } catch {}
+  }
+
+  window.__DATA__ = data;
+  computeAndRenderAll(data);
+}
+
+main().catch(err => {
+  console.error(err);
+  const el = document.getElementById("challenges");
+  if (el) el.innerHTML = `<p class="muted">Fehler beim Laden von <code>data.json</code>.</p>`;
+});
