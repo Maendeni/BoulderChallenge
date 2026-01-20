@@ -15,28 +15,92 @@
   </header>
 
   <main class="container">
-<section class="card" aria-label="Rangliste">
-  <div class="cardHeader">
-    <h2>Rangliste</h2>
+    <section class="card" aria-label="Rangliste">
+      <div class="cardHeader">
+        <div class="cardHeaderRow">
+          <h2>Rangliste</h2>
+          <div class="matrixJump">
+            <button id="jumpStart" class="btnSmall" type="button">⏪ Anfang</button>
+            <button id="jumpLatest" class="btnSmall" type="button">⏩ Neueste</button>
+          </div>
+        </div>
 
-    <details class="legendDetails">
-      <summary>Legende</summary>
-      <div class="legend">
-        <span>✅ 1P</span><span>❌ 0P</span><span>⏳ nachgeholt</span><span>— offen</span><span>🚫 nicht möglich</span>
+        <details class="legendDetails">
+          <summary>Legende</summary>
+          <div class="legend">
+            <span>✅ 1P</span><span>❌ 0P</span><span>⏳ nachgeholt</span><span>— offen</span><span>🚫 nicht möglich</span>
+          </div>
+        </details>
       </div>
-    </details>
-  </div>
-  <div id="leaderboard"></div>
-</section>
-
-
-    <!-- Die separate Fairness‑Karte wurde entfernt. Die Verteilung der definierten Routen wird nun in der Rangliste angezeigt. -->
+      <div id="leaderboard"></div>
+    </section>
 
     <section class="card" aria-label="Challenges">
       <div class="cardHeader">
         <h2>Challenges</h2>
       </div>
       <div id="challenges"></div>
+    </section>
+
+    <section class="card" aria-label="Admin">
+      <div class="cardHeader">
+        <h2>Admin</h2>
+        <p class="muted">Änderungen werden als JSON kopiert und in GitHub in <code>data.json</code> eingefügt.</p>
+      </div>
+
+      <details class="adminDetails">
+        <summary>Neue Challenge erfassen</summary>
+
+        <div class="adminGrid">
+          <label class="field">
+            <span>Datum</span>
+            <input id="admDate" type="date" />
+          </label>
+
+          <label class="field">
+            <span>Label</span>
+            <input id="admLabel" type="text" placeholder="z.B. KW 07" />
+          </label>
+
+          <label class="field fieldWide">
+            <span>Route</span>
+            <input id="admRoute" type="text" placeholder="z.B. Schwarz 6c – Dach rechts" />
+          </label>
+
+          <label class="field">
+            <span>Definiert von</span>
+            <select id="admSetBy"></select>
+          </label>
+
+          <label class="field">
+            <span>Route entfernt ab (optional)</span>
+            <input id="admRemovedFrom" type="date" />
+          </label>
+
+          <label class="field fieldWide">
+            <span>Notiz (optional)</span>
+            <input id="admNotes" type="text" placeholder="z.B. Wird nächste Woche neu geschraubt" />
+          </label>
+        </div>
+
+        <div class="adminBlock">
+          <div class="adminBlockTitle">Ergebnisse (Tippen zum Umschalten)</div>
+          <div id="admResults" class="adminResults"></div>
+        </div>
+
+        <div class="adminActions">
+          <button id="admAdd" class="btnPrimary" type="button">Challenge hinzufügen</button>
+          <button id="admCopy" class="btn" type="button">JSON kopieren</button>
+          <button id="admDownload" class="btn" type="button">JSON herunterladen</button>
+          <button id="admResetLocal" class="btn" type="button">Lokale Änderungen verwerfen</button>
+        </div>
+
+        <div class="adminBlock">
+          <div class="adminBlockTitle">Vorschau (data.json)</div>
+          <textarea id="admJson" class="adminTextarea" rows="10" spellcheck="false"></textarea>
+          <p class="muted">Tipp: Alles im Textfeld kopieren → GitHub <code>data.json</code> ersetzen → Commit.</p>
+        </div>
+      </details>
     </section>
   </main>
 
@@ -45,69 +109,5 @@
   </footer>
 
   <script src="app.js" defer></script>
-
 </body>
-
-  <section class="card" aria-label="Admin">
-  <div class="cardHeader">
-    <h2>Admin</h2>
-    <p class="muted">Änderungen werden als JSON kopiert und in GitHub in <code>data.json</code> eingefügt.</p>
-  </div>
-
-  <details class="adminDetails">
-    <summary>Neue Challenge erfassen</summary>
-
-    <div class="adminGrid">
-      <label class="field">
-        <span>Datum</span>
-        <input id="admDate" type="date" />
-      </label>
-
-      <label class="field">
-        <span>Label (optional)</span>
-        <input id="admLabel" type="text" placeholder="z.B. KW 07" />
-      </label>
-
-      <label class="field fieldWide">
-        <span>Route</span>
-        <input id="admRoute" type="text" placeholder="z.B. Schwarz 6c – Dach rechts" />
-      </label>
-
-      <label class="field">
-        <span>Definiert von</span>
-        <select id="admSetBy"></select>
-      </label>
-
-      <label class="field">
-        <span>Route entfernt ab (optional)</span>
-        <input id="admRemovedFrom" type="date" />
-      </label>
-
-      <label class="field fieldWide">
-        <span>Notiz (optional)</span>
-        <input id="admNotes" type="text" placeholder="z.B. Wird nächste Woche neu geschraubt" />
-      </label>
-    </div>
-
-    <div class="adminBlock">
-      <div class="adminBlockTitle">Ergebnisse (Tippen zum Umschalten)</div>
-      <div id="admResults" class="adminResults"></div>
-    </div>
-
-<div class="adminActions">
-  <button id="admAdd" class="btnPrimary">Challenge hinzufügen</button>
-  <button id="admCopy" class="btn">JSON kopieren</button>
-  <button id="admDownload" class="btn">JSON herunterladen</button>
-  <button id="admResetLocal" class="btn">Lokale Änderungen verwerfen</button>
-</div>
-
-
-    <div class="adminBlock">
-      <div class="adminBlockTitle">Vorschau (data.json)</div>
-      <textarea id="admJson" class="adminTextarea" rows="10" spellcheck="false"></textarea>
-      <p class="muted">Tipp: Alles im Textfeld kopieren → GitHub <code>data.json</code> ersetzen → Commit.</p>
-    </div>
-  </details>
-</section>
 </html>
-
