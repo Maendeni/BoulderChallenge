@@ -28,37 +28,6 @@
   ],
   "challenges": [
     {
-      "id": "2026-01-21",
-      "date": "2026-01-21",
-      "label": "KW 04",
-      "route": "Gelbe 5 mit schwierigem Start",
-      "setBy": "Sab",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "open",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
       "id": "2026-01-14",
       "date": "2026-01-14",
       "label": "KW 03",
@@ -73,37 +42,6 @@
         },
         "Geo": {
           "status": "open",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "open",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-01-07",
-      "date": "2026-01-07",
-      "label": "KW 02",
-      "route": "Gelbe 8 neuer Bereich",
-      "setBy": "Flo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
           "when": ""
         },
         "Flo": {
@@ -146,7 +84,69 @@
           "when": ""
         },
         "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-01-07",
+      "date": "2026-01-07",
+      "label": "KW 02",
+      "route": "Gelbe 8 neuer Bereich",
+      "setBy": "Flo",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-01-21",
+      "date": "2026-01-21",
+      "label": "KW 04",
+      "route": "Gelbe 5 mit schwierigem Start",
+      "setBy": "Sab",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "success",
+          "when": ""
+        },
+        "Flo": {
           "status": "open",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "success",
           "when": ""
         }
       }
