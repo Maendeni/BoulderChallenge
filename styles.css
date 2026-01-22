@@ -112,9 +112,10 @@ code{
 }
 
 .matrixNameCol{
-  width: 96px;
-  min-width: 96px;
-  flex: 0 0 96px;
+  /* narrower name column to reduce wasted space */
+  width: 74px;
+  min-width: 74px;
+  flex: 0 0 74px;
   color: var(--muted);
   font-size:12px;
   display:flex;
@@ -131,12 +132,14 @@ code{
 
 .weekRow, .iconRow{
   display:flex;
-  gap:6px;
+  /* reduced gap between columns to fit more on mobile */
+  gap:4px;
   padding:4px 2px;
 }
 
 .weekCell{
-  min-width: 56px;
+  /* narrower cells for compact view */
+  min-width: 48px;
   height: 26px;
   display:flex;
   align-items:center;
@@ -182,12 +185,14 @@ code{
 
 .playerRow{
   display:flex;
-  gap:10px;
+  /* tighter gap between name column and result matrix */
+  gap:8px;
   margin-top:8px;
 }
 
 .iconCell{
-  min-width: 56px;
+  /* match width with header cells */
+  min-width: 48px;
   height: 32px;
   display:flex;
   align-items:center;
@@ -196,6 +201,40 @@ code{
   border-radius:12px;
   background: rgba(0,0,0,0.18);
   font-size:14px;
+}
+
+/* Highlight result icons when the participant defined the challenge */
+.iconCell.setterIcon{
+  color: var(--accent);
+  border-color: rgba(56, 189, 248, 0.45);
+  font-weight:600;
+}
+
+/* Highlight the status icon inside person chips for the challenge setter */
+.personStatus.setterIcon{
+  color: var(--accent);
+  font-weight:600;
+}
+
+/* Provide relative positioning for challenge cards so the edit button can be absolutely positioned */
+.challengeCard{
+  position: relative;
+}
+
+/* Styling for the small edit button on challenge cards */
+.challengeEditBtn{
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size:14px;
+  cursor: pointer;
+  padding: 2px;
+}
+.challengeEditBtn:hover{
+  color: var(--accent);
 }
 
 /* ---- Challenges ---- */
@@ -248,6 +287,12 @@ code{
 
 .personStatus{
   font-size:16px;
+}
+
+/* Highlight the entire chip when the participant defined the challenge */
+.personChip.setterChip{
+  /* Use accent color on the border similar to matrix highlight */
+  border-color: rgba(56, 189, 248, 0.45);
 }
 
 /* ---- Admin ---- */
@@ -366,9 +411,10 @@ code{
 /* ---- Extra mobile compaction ---- */
 @media (max-width: 520px){
   .card{ padding:10px; }
-  .matrixNameCol{ width: 78px; min-width:78px; flex: 0 0 78px; }
-  .weekCell{ min-width: 50px; font-size:10px; }
-  .iconCell{ min-width: 50px; height: 30px; font-size:13px; }
+  /* further tighten columns on very small screens */
+  .matrixNameCol{ width: 60px; min-width:60px; flex: 0 0 60px; }
+  .weekCell{ min-width: 42px; font-size:10px; }
+  .iconCell{ min-width: 42px; height: 30px; font-size:13px; }
   .playerBlock{ padding:9px; }
   .playerName{ font-size:13px; }
   .badge{ font-size:10.5px; padding:3px 7px; }

@@ -83,12 +83,14 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
 
   const latestId = challengesAsc[challengesAsc.length - 1]?.id;
 
-  const headerCells = challengesAsc.map(ch => {
-    const label = getWeekLabel(ch);
+  // In der kompakten Ansicht wird eine laufende Nummer plus Initiale des Setters angezeigt, z. B. „01M“.
+  const headerCells = challengesAsc.map((ch, idx) => {
+    const seq = String(idx + 1).padStart(2, "0");
     const initial = getSetterInitial(ch, pidToName);
+    const display = `${seq}${initial}`;
     const cls = (ch.id === latestId) ? "weekCell weekCellLatest" : "weekCell";
     const title = `${fmtDate(ch.date)} · ${safeText(ch.route ?? "")}`;
-    return `<div class="${cls}" title="${safeText(title)}">${safeText(label)} ${safeText(initial)}</div>`;
+    return `<div class="${cls}" title="${safeText(title)}">${safeText(display)}</div>`;
   }).join("");
 
   const playersHtml = leaderboardRows.map(r => {
@@ -98,7 +100,9 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
       const when = res.when ?? "";
       const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
       const icon = statusToIcon(status, when, effectiveImpossible);
-      const cls = (ch.id === latestId) ? "iconCell weekCellLatest" : "iconCell";
+      const isSetter = (ch.setBy === r.id);
+      let cls = (ch.id === latestId) ? "iconCell weekCellLatest" : "iconCell";
+      if (isSetter) cls += " setterIcon";
       return `<div class="${cls}">${icon}</div>`;
     }).join("");
 
@@ -113,7 +117,6 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
             <span class="badge">🚫: ${r.openImpossible}</span>
           </div>
         </div>
-
         <div class="playerRow">
           <div class="matrixNameCol"></div>
           <div class="matrixScroll" data-matrix-scroll="1">
@@ -129,14 +132,13 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
   el.innerHTML = `
     <div class="matrix">
       <div class="matrixHeaderRow">
-        <div class="matrixNameCol">Teilnehmer</div>
+        <div class="matrixNameCol">Wer</div>
         <div class="matrixScroll" data-matrix-scroll="1">
           <div class="weekRow">
             ${headerCells}
           </div>
         </div>
       </div>
-
       <div class="matrixBody">
         ${playersHtml}
       </div>
@@ -167,7 +169,6 @@ function wireMatrixScrollSync() {
 }
 
 function wireJumpButtons() {
-  // Nur einmal binden
   if (window.__jumpWired) return;
   window.__jumpWired = true;
 
@@ -189,6 +190,54 @@ function wireJumpButtons() {
       els.forEach(el => { el.scrollLeft = max; });
     });
   }
+}
+
+/* ---------------- Challenge Editing ---------------- */
+
+// aktuell bearbeitete Challenge (null = neu)
+window.__editingChallengeId = null;
+
+function startEditChallenge(chId) {
+  try {
+    const data = window.__DATA__;
+    if (!data || !data.challenges) return;
+    const participants = data.participants ?? [];
+    const ch = data.challenges.find(c => c.id === chId);
+    if (!ch) return;
+    window.__editingChallengeId = chId;
+    const draft = {
+      date: ch.date || "",
+      label: ch.label || "",
+      route: ch.route || "",
+      setBy: ch.setBy || (participants[0]?.id ?? ""),
+      removedFrom: ch.removedFrom || "",
+      notes: ch.notes || "",
+      results: JSON.parse(JSON.stringify(ch.results || {}))
+    };
+    // sicherstellen, dass jeder Teilnehmer einen Eintrag hat
+    for (const p of participants) {
+      if (!draft.results[p.id]) draft.results[p.id] = { status: "open", when: "" };
+    }
+    applyDraftToUi(draft, participants);
+    saveDraft(draft);
+    const btnAdd = document.getElementById("admAdd");
+    if (btnAdd) btnAdd.textContent = "Challenge aktualisieren";
+    const details = document.querySelector('.adminDetails');
+    if (details && !details.open) details.open = true;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function wireChallengeEdit() {
+  const btns = document.querySelectorAll('.challengeEditBtn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', ev => {
+      const chid = btn.getAttribute('data-chid');
+      if (chid) startEditChallenge(chid);
+      ev.stopPropagation();
+    });
+  });
 }
 
 /* ---------------- Gesamtrender ---------------- */
@@ -249,13 +298,25 @@ function computeAndRenderAll(data) {
 function renderChallenges(challenges, participants, pidToName, now) {
   const el = document.getElementById("challenges");
 
+  const asc = [...challenges].sort(byOldestFirst);
+  const seqMap = {};
+  asc.forEach((c, idx) => {
+    seqMap[c.id] = idx + 1;
+  });
+
   const cards = challenges.map(ch => {
     const setByName = pidToName[ch.setBy] ?? ch.setBy ?? "—";
     const removed = ch.removedFrom ? `Route entfernt ab: ${fmtDate(ch.removedFrom)}` : "Route entfernt ab: —";
 
+    const editBtn = `<button class="challengeEditBtn" data-chid="${safeText(ch.id)}" type="button" title="Bearbeiten">✏️</button>`;
+
+    const seq = String(seqMap[ch.id]).padStart(2, "0");
+    const initial = getSetterInitial(ch, pidToName);
+    const seqLabel = `${seq}${initial}`;
+
     const top = `
       <div>
-        <div class="challengeTitle">${safeText(ch.label ?? "")} · ${fmtDate(ch.date)}</div>
+        <div class="challengeTitle">${safeText(seqLabel)} · ${safeText(ch.label ?? "")} · ${fmtDate(ch.date)}</div>
         <div class="challengeMeta">Route: ${safeText(ch.route ?? "—")}</div>
         <div class="challengeMeta">Definiert von: ${safeText(setByName)}</div>
         <div class="challengeMeta">${removed}</div>
@@ -270,17 +331,21 @@ function renderChallenges(challenges, participants, pidToName, now) {
       const when = r.when ?? "";
       const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
       const icon = statusToIcon(status, when, effectiveImpossible);
+      const isSetter = (ch.setBy === p.id);
+      const statusClass = isSetter ? " setterIcon" : "";
+      const chipClass = isSetter ? "personChip setterChip" : "personChip";
 
       return `
-        <div class="personChip">
+        <div class="${chipClass}">
           <div class="personName">${safeText(p.name)}</div>
-          <div class="personStatus" aria-label="Status">${icon}</div>
+          <div class="personStatus${statusClass}" aria-label="Status">${icon}</div>
         </div>
       `;
     }).join("");
 
     return `
-      <div class="challengeCard">
+      <div class="challengeCard" data-chid="${safeText(ch.id)}">
+        ${editBtn}
         ${top}
         <div class="grid5">${chips}</div>
       </div>
@@ -288,6 +353,7 @@ function renderChallenges(challenges, participants, pidToName, now) {
   }).join("");
 
   el.innerHTML = cards || `<p class="muted">Noch keine Challenges erfasst.</p>`;
+  wireChallengeEdit();
 }
 
 /* ---------------- Admin ---------------- */
@@ -321,7 +387,6 @@ function renderAdmin(data, participants) {
 
   applyDraftToUi(draft, participants);
 
-  // Bugfix: Handler nur einmal binden (sonst doppelte Popups)
   if (!window.__adminWired) {
     wireAdminHandlers(participants);
     window.__adminWired = true;
@@ -355,7 +420,6 @@ function wireAdminHandlers(participants) {
     el.addEventListener("change", syncDraft);
   });
 
-  // Datum geändert -> Label automatisch setzen (KW)
   if (elDate && elLabel) {
     elDate.addEventListener("change", () => {
       const week = getIsoWeek(elDate.value);
@@ -384,7 +448,7 @@ function wireAdminHandlers(participants) {
         return;
       }
 
-      const ch = {
+      const updatedChallenge = {
         id: draft.date,
         date: draft.date,
         label: draft.label || "",
@@ -396,7 +460,16 @@ function wireAdminHandlers(participants) {
       };
 
       data.challenges = data.challenges ?? [];
-      data.challenges.unshift(ch);
+
+      if (window.__editingChallengeId) {
+        const idx = data.challenges.findIndex(c => c.id === window.__editingChallengeId);
+        if (idx !== -1) data.challenges.splice(idx, 1);
+        data.challenges.unshift(updatedChallenge);
+        window.__editingChallengeId = null;
+        btnAdd.textContent = "Challenge hinzufügen";
+      } else {
+        data.challenges.unshift(updatedChallenge);
+      }
 
       localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
 
@@ -467,19 +540,35 @@ function applyDraftToUi(draft, participants) {
     `;
   }).join("");
 
-  // Toggle: — -> ✅ -> ❌ -> —
+  // Klickzyklus: offen → Erfolg → Erfolg + nachgeholt → Misserfolg → Misserfolg + nachgeholt → offen
   box.querySelectorAll(".resultBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pid = btn.getAttribute("data-pid");
       const d = readDraftFromUi(participants);
 
       const cur = d.results[pid] ?? { status: "open", when: "" };
-      const next = (cur.status === "open") ? "success"
-                 : (cur.status === "success") ? "fail"
-                 : "open";
+      const status = cur.status ?? "open";
+      const when = cur.when ?? "";
+      let nextStatus, nextWhen;
 
-      d.results[pid] = { status: next, when: cur.when || "" };
-      if (next === "open") d.results[pid].when = "";
+      if (status === "open") {
+        nextStatus = "success";
+        nextWhen = "";
+      } else if (status === "success" && when !== "makeup") {
+        nextStatus = "success";
+        nextWhen = "makeup";
+      } else if (status === "success" && when === "makeup") {
+        nextStatus = "fail";
+        nextWhen = "";
+      } else if (status === "fail" && when !== "makeup") {
+        nextStatus = "fail";
+        nextWhen = "makeup";
+      } else {
+        nextStatus = "open";
+        nextWhen = "";
+      }
+
+      d.results[pid] = { status: nextStatus, when: nextWhen };
 
       saveDraft(d);
       applyDraftToUi(d, participants);
@@ -540,7 +629,6 @@ async function main() {
   const res = await fetch("data.json", { cache: "no-store" });
   let data = await res.json();
 
-  // lokale Arbeitskopie verwenden (damit Änderungen nach Refresh bleiben)
   const local = localStorage.getItem("kletterliga_data_local");
   if (local) {
     try { data = JSON.parse(local); } catch {}
