@@ -28,6 +28,37 @@
   ],
   "challenges": [
     {
+      "id": "2026-01-28",
+      "date": "2026-01-28",
+      "label": "KW 05",
+      "route": "Blaue 9 - Quergang im neuen Bereich rechts",
+      "setBy": "Geo",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-01-21",
       "date": "2026-01-21",
       "label": "KW 04",
