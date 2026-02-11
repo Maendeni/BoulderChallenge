@@ -28,6 +28,68 @@
   ],
   "challenges": [
     {
+      "id": "2026-02-11",
+      "date": "2026-02-11",
+      "label": "KW 07",
+      "route": "Schwarze 8 - jump nach rechts neue Halle",
+      "setBy": "Flo",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-02-04",
+      "date": "2026-02-04",
+      "label": "KW 06",
+      "route": "Gelbe 7 kleine Griffe neue Halle",
+      "setBy": "Dan",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "success",
+          "when": ""
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": "makeup"
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-01-28",
       "date": "2026-01-28",
       "label": "KW 05",
