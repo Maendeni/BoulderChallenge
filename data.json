@@ -28,6 +28,37 @@
   ],
   "challenges": [
     {
+      "id": "2026-02-18",
+      "date": "2026-02-18",
+      "label": "KW 08",
+      "route": "Grüne 5 mit Bimano-Open Kleber --> 6",
+      "setBy": "Sab",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "open",
+          "when": ""
+        },
+        "Flo": {
+          "status": "open",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-02-11",
       "date": "2026-02-11",
       "label": "KW 07",
