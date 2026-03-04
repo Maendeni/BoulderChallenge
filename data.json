@@ -28,6 +28,37 @@
   ],
   "challenges": [
     {
+      "id": "2026-03-04",
+      "date": "2026-03-04",
+      "label": "KW 10",
+      "route": "Weisse 8 - Grifflöcher verboten!!",
+      "setBy": "Geo",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "open",
+          "when": ""
+        },
+        "Geo": {
+          "status": "success",
+          "when": ""
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "fail",
+          "when": ""
+        },
+        "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-02-04",
       "date": "2026-02-04",
       "label": "KW 06",
