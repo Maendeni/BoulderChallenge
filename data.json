@@ -33,7 +33,7 @@
       "label": "KW 11",
       "route": "Orange 8 queergang links nähr uehi, fingrig",
       "setBy": "Dan",
-      "removedFrom": null,
+      "removedFrom": "2026-03-15",
       "notes": "",
       "results": {
         "Dan": {
@@ -54,6 +54,37 @@
         },
         "Sab": {
           "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-03-18",
+      "date": "2026-03-18",
+      "label": "KW 12",
+      "route": "Rote 7 neue Halle",
+      "setBy": "Mar",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Flo": {
+          "status": "open",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
           "when": ""
         }
       }
