@@ -28,6 +28,37 @@
   ],
   "challenges": [
     {
+      "id": "2026-04-15",
+      "date": "2026-04-15",
+      "label": "KW 16",
+      "route": "Grüne 8 hinten am Würfel in der alten Halle",
+      "setBy": "Dan",
+      "removedFrom": null,
+      "notes": "Am Schluss kleingriffig",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "open",
+          "when": ""
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-04-01",
       "date": "2026-04-01",
       "label": "KW 14",
