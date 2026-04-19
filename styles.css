@@ -80,25 +80,118 @@ code{
   font-size: 0.95em;
 }
 
-/* ---- Jump Buttons ---- */
-.matrixJump{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
+/* ---- Leaderboard Zeilen ---- */
+.lbList{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.btnSmall{
-  padding:7px 9px;
-  border-radius:12px;
-  border:1px solid var(--line);
+.lbRow{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
   background: rgba(255,255,255,0.02);
-  color: var(--text);
-  cursor:pointer;
-  font-size:12px;
 }
-.btnSmall:active{ transform: translateY(1px); }
 
-/* ---- Ranglisten-Matrix ---- */
+.lbRow.lbRowFirst{
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.lbRank{
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  width: 16px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.lbAvatar{
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.lbName{
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.lbBarWrap{
+  flex: 2;
+  height: 5px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  min-width: 40px;
+}
+
+.lbBar{
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.lbPts{
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 36px;
+  text-align: right;
+}
+
+.lbDefined{
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+/* ---- Matrix (ausklappbar) ---- */
+.matrixToggle{
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.matrixToggle:hover{ color: var(--text); border-color: rgba(56,189,248,0.3); }
+.matrixToggle .mtArrow{ display: inline-block; transition: transform 0.2s; }
+.matrixToggle[aria-expanded="true"] .mtArrow{ transform: rotate(180deg); }
+
+.matrixWrap{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.matrixWrap[hidden]{ display: none; }
+
 .matrix{
   display:flex;
   flex-direction:column;
@@ -112,7 +205,6 @@ code{
 }
 
 .matrixNameCol{
-  /* narrower name column to reduce wasted space */
   width: 74px;
   min-width: 74px;
   flex: 0 0 74px;
@@ -132,13 +224,11 @@ code{
 
 .weekRow, .iconRow{
   display:flex;
-  /* reduced gap between columns to fit more on mobile */
   gap:4px;
   padding:4px 2px;
 }
 
 .weekCell{
-  /* narrower cells for compact view */
   min-width: 48px;
   height: 26px;
   display:flex;
@@ -185,13 +275,11 @@ code{
 
 .playerRow{
   display:flex;
-  /* tighter gap between name column and result matrix */
   gap:8px;
   margin-top:8px;
 }
 
 .iconCell{
-  /* match width with header cells */
   min-width: 48px;
   height: 32px;
   display:flex;
@@ -203,11 +291,13 @@ code{
   font-size:14px;
 }
 
-/* Highlight result icons when the participant defined the challenge */
+/* Highlight result icons when the participant defined the challenge - KRÄFTIGER */
 .iconCell.setterIcon{
   color: var(--accent);
-  border-color: rgba(56, 189, 248, 0.45);
-  font-weight:600;
+  border: 2px solid var(--accent);
+  background: rgba(56, 189, 248, 0.15);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
 }
 
 /* Highlight the status icon inside person chips for the challenge setter */
@@ -216,83 +306,206 @@ code{
   font-weight:600;
 }
 
-/* Provide relative positioning for challenge cards so the edit button can be absolutely positioned */
+/* ---- Provide relative positioning for challenge cards so the edit button can be absolutely positioned ---- */
 .challengeCard{
   position: relative;
+}
+
+/* ---- Challenge Tags ---- */
+.chTags{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.chTag{
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.chTagAccent{
+  color: #fbbf24;
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.3);
+}
+
+/* ---- Result chips (kompakt, einheitlicher Stil) ---- */
+.resultChips{
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.resultChip{
+  flex: 1;
+  border-radius: 10px;
+  padding: 6px 4px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid var(--line);
+}
+
+.resultChip.rcOpen{
+  opacity: 0.55;
+}
+
+.resultChip.rcImpossible{
+  opacity: 0.5;
+}
+
+/* Setter-Highlight: deutlich sichtbar */
+.resultChip.rcSetter{
+  border: 2px solid var(--accent);
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
+}
+.resultChip.rcSetter .rcIcon{
+  color: var(--accent);
+}
+.resultChip.rcSetter .rcName{
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rcIcon{
+  font-size: 14px;
+  line-height: 1;
+}
+
+.rcName{
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
 }
 
 /* Styling for the small edit button on challenge cards */
 .challengeEditBtn{
   position: absolute;
-  top: 6px;
-  right: 6px;
-  background: none;
-  border: none;
+  top: 4px;
+  right: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  border-radius: 8px;
   color: var(--muted);
-  font-size:14px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 2px;
+  padding: 3px 7px;
+  line-height: 1;
 }
 .challengeEditBtn:hover{
   color: var(--accent);
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.08);
 }
 
-/* ---- Challenges ---- */
+/* ---- Challenges (einklappbar) ---- */
 .challengeCard{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px;
-  margin:10px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 8px 0;
   background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+
+.challengeCard[open]{
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+
+.challengeSummary{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.challengeSummary::-webkit-details-marker{ display: none; }
+.challengeSummary::marker{ content: ""; }
+.challengeSummary:hover{ background: rgba(255,255,255,0.02); }
+
+.challengeKw{
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(56,189,248,0.1);
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: 7px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.challengeSummaryBody{
+  flex: 1;
+  min-width: 0;
 }
 
 .challengeTitle{
-  font-weight:700;
-  font-size:14px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.challengeCard[open] .challengeTitle{
+  white-space: normal;
 }
 
 .challengeMeta{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:4px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 3px;
 }
 
-.grid5{
-  display:grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap:8px;
-  margin-top:10px;
+/* Mini-Dots in der Summary (eingeklappt) */
+.chMiniDots{
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.challengeCard[open] .chMiniDots{ display: none; }
+
+.chMiniDot{
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid transparent;
+}
+.chMiniDot.dotSuccess{ background: #22c55e; }
+.chMiniDot.dotFail{ background: #ef4444; }
+.chMiniDot.dotOpen{ background: var(--line); }
+.chMiniDot.dotImpossible{ background: var(--muted); opacity: 0.4; }
+.chMiniDot.dotSetter{
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.6);
+  margin: 0 2px;
 }
 
-@media (max-width: 420px){
-  .grid5{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.chChevron{
+  color: var(--muted);
+  font-size: 14px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
 }
+.challengeCard[open] .chChevron{ transform: rotate(180deg); }
 
-.personChip{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:9px 10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  background: rgba(0,0,0,0.18);
-}
-
-.personName{
-  font-size:13px;
-  color:var(--text);
-  font-weight:600;
-}
-
-.personStatus{
-  font-size:16px;
-}
-
-/* Highlight the entire chip when the participant defined the challenge */
-.personChip.setterChip{
-  /* Use accent color on the border similar to matrix highlight */
-  border-color: rgba(56, 189, 248, 0.45);
+.challengeBody{
+  padding: 0 14px 12px;
+  position: relative;
 }
 
 /* ---- Admin ---- */
@@ -418,4 +631,10 @@ code{
   .playerBlock{ padding:9px; }
   .playerName{ font-size:13px; }
   .badge{ font-size:10.5px; padding:3px 7px; }
+  .lbBarWrap{ display: none; }
+  .lbDefined{ font-size: 10px; padding: 2px 7px; }
+  .resultChips{ gap: 3px; }
+  .resultChip{ padding: 5px 2px 4px; }
+  .rcIcon{ font-size: 13px; }
+  .rcName{ font-size: 9px; }
 }

@@ -81,9 +81,40 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     return;
   }
 
+  const maxPts = Math.max(...leaderboardRows.map(r => r.points), 1);
   const latestId = challengesAsc[challengesAsc.length - 1]?.id;
 
-  // In der kompakten Ansicht wird eine laufende Nummer plus Initiale des Setters angezeigt, z. B. „01M“.
+  const avatarColors = [
+    "rgba(56,189,248,0.12)", "rgba(167,139,250,0.12)", "rgba(251,191,36,0.12)",
+    "rgba(34,197,94,0.12)", "rgba(251,113,133,0.12)",
+  ];
+  const avatarBorders = [
+    "rgba(56,189,248,0.3)", "rgba(167,139,250,0.3)", "rgba(251,191,36,0.3)",
+    "rgba(34,197,94,0.3)", "rgba(251,113,133,0.3)",
+  ];
+  const barColors = ["#38bdf8", "#a78bfa", "#fbbf24", "#4ade80", "#fb7185"];
+
+  // ---- Zeilen-Rangliste ----
+  const rowsHtml = leaderboardRows.map((r, idx) => {
+    const pct = Math.round((r.points / maxPts) * 100);
+    const isFirst = idx === 0;
+    const avatarBg = avatarColors[idx % avatarColors.length];
+    const avatarBd = avatarBorders[idx % avatarBorders.length];
+    const barColor = barColors[idx % barColors.length];
+    const initial = String(r.name).trim().charAt(0).toUpperCase();
+    return `
+      <div class="lbRow${isFirst ? " lbRowFirst" : ""}">
+        <div class="lbRank">${idx + 1}</div>
+        <div class="lbAvatar" style="background:${avatarBg};border-color:${avatarBd};color:${barColor}">${safeText(initial)}</div>
+        <div class="lbName">${safeText(r.name)}</div>
+        <div class="lbBarWrap"><div class="lbBar" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="lbPts" style="color:${barColor}">${r.points} P</div>
+        <div class="lbDefined" title="Definierte Challenges">${r.defined} def.</div>
+      </div>
+    `;
+  }).join("");
+
+  // ---- Matrix-Header ----
   const headerCells = challengesAsc.map((ch, idx) => {
     const seq = String(idx + 1).padStart(2, "0");
     const initial = getSetterInitial(ch, pidToName);
@@ -93,6 +124,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     return `<div class="${cls}" title="${safeText(title)}">${safeText(display)}</div>`;
   }).join("");
 
+  // ---- Matrix-Spielerzeilen ----
   const playersHtml = leaderboardRows.map(r => {
     const iconCells = challengesAsc.map(ch => {
       const res = (ch.results ?? {})[r.id] ?? { status: "open", when: "" };
@@ -103,7 +135,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
       const isSetter = (ch.setBy === r.id);
       let cls = (ch.id === latestId) ? "iconCell weekCellLatest" : "iconCell";
       if (isSetter) cls += " setterIcon";
-      return `<div class="${cls}">${icon}</div>`;
+      return `<div class="${cls}" title="${isSetter ? "Hat diese Challenge definiert" : ""}">${icon}</div>`;
     }).join("");
 
     return `
@@ -120,9 +152,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
         <div class="playerRow">
           <div class="matrixNameCol"></div>
           <div class="matrixScroll" data-matrix-scroll="1">
-            <div class="iconRow">
-              ${iconCells}
-            </div>
+            <div class="iconRow">${iconCells}</div>
           </div>
         </div>
       </div>
@@ -130,23 +160,41 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
   }).join("");
 
   el.innerHTML = `
-    <div class="matrix">
-      <div class="matrixHeaderRow">
-        <div class="matrixNameCol">Wer</div>
-        <div class="matrixScroll" data-matrix-scroll="1">
-          <div class="weekRow">
-            ${headerCells}
+    <div class="lbList">${rowsHtml}</div>
+
+    <div style="margin-top:12px;">
+      <button class="matrixToggle" id="matrixToggleBtn" type="button" aria-expanded="false" aria-controls="matrixWrap">
+        <span>Detail-Matrix</span>
+        <span class="mtArrow">▾</span>
+      </button>
+    </div>
+
+    <div class="matrixWrap" id="matrixWrap" hidden>
+      <p class="muted" style="margin-bottom:8px;font-size:11px;">Blau markierte Zellen = Teilnehmer hat diese Challenge definiert</p>
+      <div class="matrix">
+        <div class="matrixHeaderRow">
+          <div class="matrixNameCol">Wer</div>
+          <div class="matrixScroll" data-matrix-scroll="1">
+            <div class="weekRow">${headerCells}</div>
           </div>
         </div>
-      </div>
-      <div class="matrixBody">
-        ${playersHtml}
+        <div class="matrixBody">${playersHtml}</div>
       </div>
     </div>
   `;
 
-  wireMatrixScrollSync();
-  wireJumpButtons();
+  // Toggle-Button verdrahten
+  const toggleBtn = document.getElementById("matrixToggleBtn");
+  const matrixWrap = document.getElementById("matrixWrap");
+
+  toggleBtn.addEventListener("click", () => {
+    const isOpen = !matrixWrap.hidden;
+    matrixWrap.hidden = isOpen;
+    toggleBtn.setAttribute("aria-expanded", String(!isOpen));
+    if (!isOpen) {
+      wireMatrixScrollSync();
+    }
+  });
 }
 
 function wireMatrixScrollSync() {
@@ -166,30 +214,6 @@ function wireMatrixScrollSync() {
       syncing = false;
     }, { passive: true });
   });
-}
-
-function wireJumpButtons() {
-  if (window.__jumpWired) return;
-  window.__jumpWired = true;
-
-  const btnStart = document.getElementById("jumpStart");
-  const btnLatest = document.getElementById("jumpLatest");
-
-  if (btnStart) {
-    btnStart.addEventListener("click", () => {
-      const els = window.__matrixScrollEls ?? [];
-      els.forEach(el => { el.scrollLeft = 0; });
-    });
-  }
-
-  if (btnLatest) {
-    btnLatest.addEventListener("click", () => {
-      const els = window.__matrixScrollEls ?? [];
-      const ref = els[0];
-      const max = ref ? (ref.scrollWidth - ref.clientWidth) : 0;
-      els.forEach(el => { el.scrollLeft = max; });
-    });
-  }
 }
 
 /* ---------------- Challenge Editing ---------------- */
@@ -304,26 +328,29 @@ function renderChallenges(challenges, participants, pidToName, now) {
     seqMap[c.id] = idx + 1;
   });
 
-  const cards = challenges.map(ch => {
+  const cards = challenges.map((ch, idx) => {
     const setByName = pidToName[ch.setBy] ?? ch.setBy ?? "—";
-    const removed = ch.removedFrom ? `Route entfernt ab: ${fmtDate(ch.removedFrom)}` : "Route entfernt ab: —";
+    const seq = String(seqMap[ch.id]).padStart(2, "0");
+    const kwLabel = ch.label ? safeText(ch.label) : `Nr. ${seq}`;
+
+    // Datum DE-formatiert
+    const [dy, dm, dd] = (ch.date || "").split("-");
+    const dateFmt = dy ? `${dd}.${dm}.${dy}` : fmtDate(ch.date);
+
+    // Tags aufbauen
+    const tags = [];
+    if (ch.removedFrom) {
+      const [ry, rm, rd] = ch.removedFrom.split("-");
+      tags.push(`<span class="chTag">Route entfernt ab ${rd}.${rm}.${ry}</span>`);
+    }
+    if (ch.notes) {
+      tags.push(`<span class="chTag chTagAccent">${safeText(ch.notes)}</span>`);
+    }
+    const tagsHtml = tags.length ? `<div class="chTags">${tags.join("")}</div>` : "";
 
     const editBtn = `<button class="challengeEditBtn" data-chid="${safeText(ch.id)}" type="button" title="Bearbeiten">✏️</button>`;
 
-    const seq = String(seqMap[ch.id]).padStart(2, "0");
-    const initial = getSetterInitial(ch, pidToName);
-    const seqLabel = `${seq}${initial}`;
-
-    const top = `
-      <div>
-        <div class="challengeTitle">${safeText(seqLabel)} · ${safeText(ch.label ?? "")} · ${fmtDate(ch.date)}</div>
-        <div class="challengeMeta">Route: ${safeText(ch.route ?? "—")}</div>
-        <div class="challengeMeta">Definiert von: ${safeText(setByName)}</div>
-        <div class="challengeMeta">${removed}</div>
-        ${ch.notes ? `<div class="challengeMeta">Notiz: ${safeText(ch.notes)}</div>` : ``}
-      </div>
-    `;
-
+    // Ergebnis-Chips (Detail-Ansicht)
     const results = ch.results ?? {};
     const chips = participants.map(p => {
       const r = results[p.id] ?? { status: "open", when: "" };
@@ -332,23 +359,55 @@ function renderChallenges(challenges, participants, pidToName, now) {
       const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
       const icon = statusToIcon(status, when, effectiveImpossible);
       const isSetter = (ch.setBy === p.id);
-      const statusClass = isSetter ? " setterIcon" : "";
-      const chipClass = isSetter ? "personChip setterChip" : "personChip";
+
+      let chipCls = "resultChip";
+      if (isSetter) chipCls += " rcSetter";
+      if (effectiveImpossible) chipCls += " rcImpossible";
+      else if (status === "open") chipCls += " rcOpen";
 
       return `
-        <div class="${chipClass}">
-          <div class="personName">${safeText(p.name)}</div>
-          <div class="personStatus${statusClass}" aria-label="Status">${icon}</div>
+        <div class="${chipCls}" title="${isSetter ? safeText(p.name) + " hat diese Challenge definiert" : safeText(p.name)}">
+          <div class="rcIcon">${icon}</div>
+          <div class="rcName">${safeText(p.name)}</div>
         </div>
       `;
     }).join("");
 
+    // Mini-Punkte für die eingeklappte Ansicht
+    const miniDots = participants.map(p => {
+      const r = results[p.id] ?? { status: "open", when: "" };
+      const status = r.status ?? "open";
+      const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
+      const isSetter = (ch.setBy === p.id);
+      let dotCls = "chMiniDot";
+      if (effectiveImpossible) dotCls += " dotImpossible";
+      else if (status === "success") dotCls += " dotSuccess";
+      else if (status === "fail") dotCls += " dotFail";
+      else dotCls += " dotOpen";
+      if (isSetter) dotCls += " dotSetter";
+      return `<span class="${dotCls}" title="${safeText(p.name)}"></span>`;
+    }).join("");
+
+    // Neueste Challenge (idx 0 in challengesDesc) bleibt offen
+    const isOpen = (idx === 0) ? " open" : "";
+
     return `
-      <div class="challengeCard" data-chid="${safeText(ch.id)}">
-        ${editBtn}
-        ${top}
-        <div class="grid5">${chips}</div>
-      </div>
+      <details class="challengeCard" data-chid="${safeText(ch.id)}"${isOpen}>
+        <summary class="challengeSummary">
+          <div class="challengeKw">${kwLabel}</div>
+          <div class="challengeSummaryBody">
+            <div class="challengeTitle">${safeText(ch.route ?? "—")}</div>
+            <div class="challengeMeta">von ${safeText(setByName)} · ${dateFmt}</div>
+          </div>
+          <div class="chMiniDots" aria-hidden="true">${miniDots}</div>
+          <span class="chChevron" aria-hidden="true">▾</span>
+        </summary>
+        <div class="challengeBody">
+          ${editBtn}
+          ${tagsHtml}
+          <div class="resultChips">${chips}</div>
+        </div>
+      </details>
     `;
   }).join("");
 
