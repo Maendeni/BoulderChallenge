@@ -77,13 +77,13 @@ function getSetterInitial(ch, pidToName) {
 // aktuellen Teilnehmer gewählt (sky/violet/pink/cyan/amber – harmonieren
 // gut miteinander und bleiben auf dunklem Grund lesbar).
 const PERSON_COLOR_PALETTE = [
-  "#60a5fa", // Dan   – Blau (ruhig, klar)
-  "#a78bfa", // Geo   – Violett (bleibt)
-  "#f472b6", // Flo   – Pink (bleibt)
-  "#34d399", // Mar   – Emerald/Mintgrün (neu, klar getrennt von Blau)
-  "#fbbf24", // Sab   – Amber (bleibt)
-  "#fb7185", // Reserve – Rose
-  "#2dd4bf", // Reserve – Teal
+  "#38bdf8", // sky
+  "#a78bfa", // violet
+  "#f472b6", // pink
+  "#22d3ee", // cyan
+  "#fbbf24", // amber
+  "#4ade80", // green (Reserve)
+  "#fb7185", // rose (Reserve)
 ];
 
 function buildPersonColorMap(participants) {
@@ -396,10 +396,20 @@ function renderSeasonHeader(data, allChallenges, leaderboardRows, now) {
   // Stat-Strip
   const stripEl = document.getElementById("statStrip");
   if (stripEl) {
-    const avgPoints = leaderboardRows.length > 0
-      ? (leaderboardRows.reduce((s, r) => s + r.points, 0) / leaderboardRows.length)
-      : 0;
-    const avgLabel = `\u00d8 ${avgPoints.toFixed(1)}P`;
+    // Erfolgsrate: erfolgreiche / abgeschlossene Versuche
+    // (offene und "nicht möglich"-Einträge zählen nicht)
+    let successes = 0;
+    let attempts = 0;
+    for (const ch of allChallenges) {
+      const results = ch.results ?? {};
+      for (const r of Object.values(results)) {
+        const status = r?.status ?? "open";
+        if (status === "success") { successes += 1; attempts += 1; }
+        else if (status === "fail") { attempts += 1; }
+      }
+    }
+    const rate = attempts > 0 ? Math.round((successes / attempts) * 100) : 0;
+    const rateLabel = attempts > 0 ? `${rate}\u00a0%` : "–";
 
     stripEl.innerHTML = `
       <div class="statCell">
@@ -407,8 +417,8 @@ function renderSeasonHeader(data, allChallenges, leaderboardRows, now) {
         <div class="statL">Challenges</div>
       </div>
       <div class="statCell">
-        <div class="statV">${avgLabel}</div>
-        <div class="statL">Schnitt</div>
+        <div class="statV" title="${successes} von ${attempts} Versuchen">${rateLabel}</div>
+        <div class="statL">Erfolgsrate</div>
       </div>
       <div class="statCell">
         <div class="statV">${openChallenges}</div>
