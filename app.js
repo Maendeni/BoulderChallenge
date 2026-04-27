@@ -1,18 +1,21 @@
+/* ============================================================
+   Boulder-Challenge Frontend
+   ============================================================ */
+
+/* ---------------- Datums-Helfer ---------------- */
+
 function parseISODate(s) {
-  // Erwartet YYYY-MM-DD
   const [y, m, d] = s.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d));
 }
 
-// ISO-Kalenderwoche (KW) für Datum YYYY-MM-DD (UTC, um TZ-Probleme zu vermeiden)
 function getIsoWeek(dateString) {
   if (!dateString) return null;
   const [y, m, d] = dateString.split("-").map(Number);
   if (!y || !m || !d) return null;
-
   const dt = new Date(Date.UTC(y, m - 1, d));
-  const day = dt.getUTCDay() || 7; // Sonntag=0 -> 7
-  dt.setUTCDate(dt.getUTCDate() + 4 - day); // Donnerstag der Woche
+  const day = dt.getUTCDay() || 7;
+  dt.setUTCDate(dt.getUTCDate() + 4 - day);
   const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
   const weekNo = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
   return weekNo;
@@ -23,8 +26,12 @@ function todayUTC() {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
-function fmtDate(iso) {
-  return iso; // ISO bleibt am klarsten
+function fmtDate(iso) { return iso; }
+
+function fmtDateDE(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return y ? `${d}.${m}.${y}` : iso;
 }
 
 function statusToIcon(status, when, effectiveImpossible) {
@@ -46,19 +53,10 @@ function computeEffectiveImpossible(challenge, status, now) {
   return now >= removed;
 }
 
-function byNewestFirst(a, b) {
-  return parseISODate(b.date) - parseISODate(a.date);
-}
+function byNewestFirst(a, b) { return parseISODate(b.date) - parseISODate(a.date); }
+function byOldestFirst(a, b) { return parseISODate(a.date) - parseISODate(b.date); }
 
-function byOldestFirst(a, b) {
-  return parseISODate(a.date) - parseISODate(b.date);
-}
-
-function safeText(s) {
-  return String(s ?? "");
-}
-
-/* ---------------- Rangliste (Matrix) ---------------- */
+function safeText(s) { return String(s ?? ""); }
 
 function getWeekLabel(ch) {
   if (ch.label && String(ch.label).trim()) return String(ch.label).trim();
@@ -73,7 +71,32 @@ function getSetterInitial(ch, pidToName) {
   return c ? c.toUpperCase() : "";
 }
 
-function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, pidToName, now) {
+/* ---------------- Personen-Farben ---------------- */
+
+// Feste Palette in aesthetisch stimmiger Reihenfolge, von Claude für die
+// aktuellen Teilnehmer gewählt (sky/violet/pink/cyan/amber – harmonieren
+// gut miteinander und bleiben auf dunklem Grund lesbar).
+const PERSON_COLOR_PALETTE = [
+  "#60a5fa", // Dan   – Blau (ruhig, klar)
+  "#a78bfa", // Geo   – Violett (bleibt)
+  "#f472b6", // Flo   – Pink (bleibt)
+  "#34d399", // Mar   – Emerald/Mintgrün (neu, klar getrennt von Blau)
+  "#fbbf24", // Sab   – Amber (bleibt)
+  "#fb7185", // Reserve – Rose
+  "#2dd4bf", // Reserve – Teal
+];
+
+function buildPersonColorMap(participants) {
+  const map = {};
+  participants.forEach((p, idx) => {
+    map[p.id] = PERSON_COLOR_PALETTE[idx % PERSON_COLOR_PALETTE.length];
+  });
+  return map;
+}
+
+/* ---------------- Rangliste (Zeilen + Matrix) ---------------- */
+
+function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, pidToName, pidToColor, now) {
   const el = document.getElementById("leaderboard");
 
   if (!challengesAsc.length) {
@@ -84,32 +107,20 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
   const maxPts = Math.max(...leaderboardRows.map(r => r.points), 1);
   const latestId = challengesAsc[challengesAsc.length - 1]?.id;
 
-  const avatarColors = [
-    "rgba(56,189,248,0.12)", "rgba(167,139,250,0.12)", "rgba(251,191,36,0.12)",
-    "rgba(34,197,94,0.12)", "rgba(251,113,133,0.12)",
-  ];
-  const avatarBorders = [
-    "rgba(56,189,248,0.3)", "rgba(167,139,250,0.3)", "rgba(251,191,36,0.3)",
-    "rgba(34,197,94,0.3)", "rgba(251,113,133,0.3)",
-  ];
-  const barColors = ["#38bdf8", "#a78bfa", "#fbbf24", "#4ade80", "#fb7185"];
-
   // ---- Zeilen-Rangliste ----
   const rowsHtml = leaderboardRows.map((r, idx) => {
     const pct = Math.round((r.points / maxPts) * 100);
     const isFirst = idx === 0;
-    const avatarBg = avatarColors[idx % avatarColors.length];
-    const avatarBd = avatarBorders[idx % avatarBorders.length];
-    const barColor = barColors[idx % barColors.length];
+    const color = pidToColor[r.id] ?? "#38bdf8";
     const initial = String(r.name).trim().charAt(0).toUpperCase();
     return `
-      <div class="lbRow${isFirst ? " lbRowFirst" : ""}">
+      <div class="lbRow${isFirst ? " lbRowFirst" : ""}" style="--pColor:${color}">
         <div class="lbRank">${idx + 1}</div>
-        <div class="lbAvatar" style="background:${avatarBg};border-color:${avatarBd};color:${barColor}">${safeText(initial)}</div>
+        <div class="lbAvatar">${safeText(initial)}</div>
         <div class="lbName">${safeText(r.name)}</div>
-        <div class="lbBarWrap"><div class="lbBar" style="width:${pct}%;background:${barColor}"></div></div>
-        <div class="lbPts" style="color:${barColor}">${r.points} P</div>
-        <div class="lbDefined" title="Definierte Challenges">${r.defined} def.</div>
+        <div class="lbBarWrap"><div class="lbBar" style="width:${pct}%"></div></div>
+        <div class="lbPts">${r.points} P</div>
+        <div class="lbDefined" title="Definierte Challenges">${r.defined}\u00a0def.</div>
       </div>
     `;
   }).join("");
@@ -126,6 +137,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
 
   // ---- Matrix-Spielerzeilen ----
   const playersHtml = leaderboardRows.map(r => {
+    const color = pidToColor[r.id] ?? "#38bdf8";
     const iconCells = challengesAsc.map(ch => {
       const res = (ch.results ?? {})[r.id] ?? { status: "open", when: "" };
       const status = res.status ?? "open";
@@ -139,7 +151,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     }).join("");
 
     return `
-      <div class="playerBlock">
+      <div class="playerBlock" style="--pColor:${color}">
         <div class="playerNameRow">
           <div class="playerName">${safeText(r.name)}</div>
           <div class="playerBadges">
@@ -162,7 +174,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
   el.innerHTML = `
     <div class="lbList">${rowsHtml}</div>
 
-    <div style="margin-top:12px;">
+    <div style="margin-top:14px;">
       <button class="matrixToggle" id="matrixToggleBtn" type="button" aria-expanded="false" aria-controls="matrixWrap">
         <span>Detail-Matrix</span>
         <span class="mtArrow">▾</span>
@@ -170,7 +182,13 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     </div>
 
     <div class="matrixWrap" id="matrixWrap" hidden>
-      <p class="muted" style="margin-bottom:8px;font-size:11px;">Blau markierte Zellen = Teilnehmer hat diese Challenge definiert</p>
+      <details class="legendDetails">
+        <summary>Legende</summary>
+        <div class="legend">
+          <span>✅ 1P</span><span>❌ 0P</span><span>⏳ nachgeholt</span><span>— offen</span><span>🚫 nicht möglich</span>
+          <span class="legendSetter"><span class="legendSwatch"></span> hat Challenge definiert</span>
+        </div>
+      </details>
       <div class="matrix">
         <div class="matrixHeaderRow">
           <div class="matrixNameCol">Wer</div>
@@ -183,42 +201,32 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     </div>
   `;
 
-  // Toggle-Button verdrahten
   const toggleBtn = document.getElementById("matrixToggleBtn");
   const matrixWrap = document.getElementById("matrixWrap");
-
   toggleBtn.addEventListener("click", () => {
     const isOpen = !matrixWrap.hidden;
     matrixWrap.hidden = isOpen;
     toggleBtn.setAttribute("aria-expanded", String(!isOpen));
-    if (!isOpen) {
-      wireMatrixScrollSync();
-    }
+    if (!isOpen) wireMatrixScrollSync();
   });
 }
 
 function wireMatrixScrollSync() {
   const scrollers = Array.from(document.querySelectorAll('.matrixScroll[data-matrix-scroll="1"]'));
-  window.__matrixScrollEls = scrollers;
-
   let syncing = false;
-
   scrollers.forEach(sc => {
     sc.addEventListener("scroll", () => {
       if (syncing) return;
       syncing = true;
       const x = sc.scrollLeft;
-      scrollers.forEach(other => {
-        if (other !== sc) other.scrollLeft = x;
-      });
+      scrollers.forEach(other => { if (other !== sc) other.scrollLeft = x; });
       syncing = false;
     }, { passive: true });
   });
 }
 
-/* ---------------- Challenge Editing ---------------- */
+/* ---------------- Challenge Editing (Admin) ---------------- */
 
-// aktuell bearbeitete Challenge (null = neu)
 window.__editingChallengeId = null;
 
 function startEditChallenge(chId) {
@@ -238,7 +246,6 @@ function startEditChallenge(chId) {
       notes: ch.notes || "",
       results: JSON.parse(JSON.stringify(ch.results || {}))
     };
-    // sicherstellen, dass jeder Teilnehmer einen Eintrag hat
     for (const p of participants) {
       if (!draft.results[p.id]) draft.results[p.id] = { status: "open", when: "" };
     }
@@ -246,22 +253,169 @@ function startEditChallenge(chId) {
     saveDraft(draft);
     const btnAdd = document.getElementById("admAdd");
     if (btnAdd) btnAdd.textContent = "Challenge aktualisieren";
-    const details = document.querySelector('.adminDetails');
-    if (details && !details.open) details.open = true;
+    switchTab("admin");
   } catch (err) {
     console.error(err);
   }
 }
 
 function wireChallengeEdit() {
-  const btns = document.querySelectorAll('.challengeEditBtn');
-  btns.forEach(btn => {
+  document.querySelectorAll('.challengeEditBtn').forEach(btn => {
     btn.addEventListener('click', ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
       const chid = btn.getAttribute('data-chid');
       if (chid) startEditChallenge(chid);
-      ev.stopPropagation();
     });
   });
+}
+
+/* ---------------- Tap-Zyklus auf Ergebnis-Chips ---------------- */
+
+// Zyklus: open → success → success+makeup → fail → fail+makeup → open
+function nextStatus(status, when) {
+  status = status ?? "open";
+  when = when ?? "";
+  if (status === "open") return { status: "success", when: "" };
+  if (status === "success" && when !== "makeup") return { status: "success", when: "makeup" };
+  if (status === "success" && when === "makeup") return { status: "fail", when: "" };
+  if (status === "fail" && when !== "makeup") return { status: "fail", when: "makeup" };
+  return { status: "open", when: "" };
+}
+
+function wireChipTap() {
+  document.querySelectorAll('.resultChip[data-chid]').forEach(chip => {
+    chip.addEventListener('click', ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const chId = chip.getAttribute('data-chid');
+      const pid = chip.getAttribute('data-pid');
+      cycleChallengeStatus(chId, pid);
+    });
+  });
+}
+
+function cycleChallengeStatus(chId, pid) {
+  const data = window.__DATA__;
+  if (!data) return;
+  const ch = (data.challenges ?? []).find(c => c.id === chId);
+  if (!ch) return;
+  ch.results = ch.results ?? {};
+  const prev = ch.results[pid] ?? { status: "open", when: "" };
+
+  // Für Undo merken
+  window.__lastChipChange = {
+    chId, pid,
+    prev: { status: prev.status ?? "open", when: prev.when ?? "" }
+  };
+
+  const next = nextStatus(prev.status, prev.when);
+  ch.results[pid] = next;
+
+  // Persistieren und neu rendern
+  localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
+
+  // Feedback
+  if (navigator.vibrate) { try { navigator.vibrate(8); } catch {} }
+  const participants = data.participants ?? [];
+  const pname = (participants.find(p => p.id === pid) || {}).name ?? pid;
+  const icon = statusToIcon(next.status, next.when, false);
+  showToast(`${pname}: ${icon}`, () => {
+    // Undo
+    const d = window.__DATA__;
+    const c = (d.challenges ?? []).find(x => x.id === chId);
+    if (!c) return;
+    c.results[pid] = window.__lastChipChange.prev;
+    localStorage.setItem("kletterliga_data_local", JSON.stringify(d));
+    computeAndRenderAll(d);
+  });
+
+  computeAndRenderAll(data);
+}
+
+/* ---------------- Toast ---------------- */
+
+let toastTimer = null;
+
+function showToast(msg, undoHandler) {
+  const toast = document.getElementById("toast");
+  const toastMsg = document.getElementById("toastMsg");
+  const toastUndo = document.getElementById("toastUndo");
+  if (!toast || !toastMsg || !toastUndo) return;
+
+  toastMsg.textContent = msg;
+  toast.hidden = false;
+
+  // Undo handler frisch setzen (alte Listener entfernen)
+  const newBtn = toastUndo.cloneNode(true);
+  toastUndo.parentNode.replaceChild(newBtn, toastUndo);
+  newBtn.addEventListener("click", () => {
+    if (typeof undoHandler === "function") undoHandler();
+    hideToast();
+  });
+
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 3500);
+}
+
+function hideToast() {
+  const toast = document.getElementById("toast");
+  if (toast) toast.hidden = true;
+  if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+}
+
+/* ---------------- Saison-Fortschritt + Stats ---------------- */
+
+function renderSeasonHeader(data, allChallenges, leaderboardRows, now) {
+  const title = data.season?.name ?? "Boulder-Challenge";
+  document.getElementById("seasonTitle").textContent = title;
+
+  const totalChallenges = data.season?.totalChallenges ?? 0;
+  const doneChallenges = allChallenges.length;
+  const openChallenges = Math.max(0, totalChallenges - doneChallenges);
+
+  const latestDate = [...allChallenges].sort(byNewestFirst)[0]?.date ?? null;
+  const seasonMeta = document.getElementById("seasonMeta");
+
+  // Fortschrittsbalken: durchgeführte / geplante Challenges
+  const pct = totalChallenges > 0
+    ? Math.min(100, Math.round((doneChallenges / totalChallenges) * 100))
+    : 0;
+
+  const progressLabel = totalChallenges > 0
+    ? `${doneChallenges} von ${totalChallenges} Challenges`
+    : `${doneChallenges} Challenges`;
+
+  seasonMeta.textContent = latestDate
+    ? `${progressLabel} · Letzte ${fmtDateDE(latestDate)}`
+    : progressLabel;
+
+  const fill = document.getElementById("seasonBarFill");
+  if (fill) fill.style.width = `${pct}%`;
+
+  // Stat-Strip
+  const stripEl = document.getElementById("statStrip");
+  if (stripEl) {
+    const avgPoints = leaderboardRows.length > 0
+      ? (leaderboardRows.reduce((s, r) => s + r.points, 0) / leaderboardRows.length)
+      : 0;
+    const avgLabel = `\u00d8 ${avgPoints.toFixed(1)}P`;
+
+    stripEl.innerHTML = `
+      <div class="statCell">
+        <div class="statV statAccent">${doneChallenges}</div>
+        <div class="statL">Challenges</div>
+      </div>
+      <div class="statCell">
+        <div class="statV">${avgLabel}</div>
+        <div class="statL">Schnitt</div>
+      </div>
+      <div class="statCell">
+        <div class="statV">${openChallenges}</div>
+        <div class="statL">Offen</div>
+      </div>
+    `;
+  }
 }
 
 /* ---------------- Gesamtrender ---------------- */
@@ -269,18 +423,14 @@ function wireChallengeEdit() {
 function computeAndRenderAll(data) {
   const now = todayUTC();
 
-  document.getElementById("seasonTitle").textContent = data.season?.name ?? "Boulder-Challenge";
-
   const allChallenges = data.challenges ?? [];
   const challengesDesc = [...allChallenges].sort(byNewestFirst);
   const challengesAsc = [...allChallenges].sort(byOldestFirst);
 
-  const latestDate = challengesDesc[0]?.date ?? null;
-  document.getElementById("seasonMeta").textContent =
-    latestDate ? `Stand: ${fmtDate(latestDate)}` : "Stand: –";
-
   const participants = data.participants ?? [];
   const pidToName = Object.fromEntries(participants.map(p => [p.id, p.name]));
+  const pidToColor = buildPersonColorMap(participants);
+  window.__pidToColor = pidToColor;
 
   const stats = Object.fromEntries(participants.map(p => [
     p.id,
@@ -289,15 +439,12 @@ function computeAndRenderAll(data) {
 
   for (const ch of allChallenges) {
     if (ch.setBy && stats[ch.setBy]) stats[ch.setBy].defined += 1;
-
     const results = ch.results ?? {};
     for (const p of participants) {
       const r = results[p.id] ?? { status: "open", when: "" };
       const status = r.status ?? "open";
       const effectiveImpossible = computeEffectiveImpossible(ch, status, now);
-
       stats[p.id].points += pointsFor(status, effectiveImpossible);
-
       if (status === "open") {
         if (effectiveImpossible) stats[p.id].openImpossible += 1;
         else stats[p.id].openPossible += 1;
@@ -310,8 +457,9 @@ function computeAndRenderAll(data) {
     return a.name.localeCompare(b.name, "de");
   });
 
-  renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, now);
-  renderChallenges(challengesDesc, participants, pidToName, now);
+  renderSeasonHeader(data, allChallenges, leaderboard, now);
+  renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, pidToColor, now);
+  renderChallenges(challengesDesc, participants, pidToName, pidToColor, now);
   renderAdmin(data, participants);
 
   window.__DATA__ = data;
@@ -319,38 +467,33 @@ function computeAndRenderAll(data) {
 
 /* ---------------- Challenges (Karten) ---------------- */
 
-function renderChallenges(challenges, participants, pidToName, now) {
+function renderChallenges(challenges, participants, pidToName, pidToColor, now) {
   const el = document.getElementById("challenges");
 
   const asc = [...challenges].sort(byOldestFirst);
   const seqMap = {};
-  asc.forEach((c, idx) => {
-    seqMap[c.id] = idx + 1;
-  });
+  asc.forEach((c, idx) => { seqMap[c.id] = idx + 1; });
 
   const cards = challenges.map((ch, idx) => {
     const setByName = pidToName[ch.setBy] ?? ch.setBy ?? "—";
+    const setterColor = pidToColor[ch.setBy] ?? "#38bdf8";
     const seq = String(seqMap[ch.id]).padStart(2, "0");
     const kwLabel = ch.label ? safeText(ch.label) : `Nr. ${seq}`;
+    const dateFmt = fmtDateDE(ch.date);
 
-    // Datum DE-formatiert
-    const [dy, dm, dd] = (ch.date || "").split("-");
-    const dateFmt = dy ? `${dd}.${dm}.${dy}` : fmtDate(ch.date);
-
-    // Tags aufbauen
+    // Tags
     const tags = [];
     if (ch.removedFrom) {
-      const [ry, rm, rd] = ch.removedFrom.split("-");
-      tags.push(`<span class="chTag">Route entfernt ab ${rd}.${rm}.${ry}</span>`);
+      tags.push(`<span class="chTag">Route entfernt ab ${fmtDateDE(ch.removedFrom)}</span>`);
     }
     if (ch.notes) {
       tags.push(`<span class="chTag chTagAccent">${safeText(ch.notes)}</span>`);
     }
     const tagsHtml = tags.length ? `<div class="chTags">${tags.join("")}</div>` : "";
 
-    const editBtn = `<button class="challengeEditBtn" data-chid="${safeText(ch.id)}" type="button" title="Bearbeiten">✏️</button>`;
+    const editBtn = `<button class="challengeEditBtn" data-chid="${safeText(ch.id)}" type="button" title="Bearbeiten">✏️ bearbeiten</button>`;
 
-    // Ergebnis-Chips (Detail-Ansicht)
+    // Ergebnis-Chips (tap-fähig)
     const results = ch.results ?? {};
     const chips = participants.map(p => {
       const r = results[p.id] ?? { status: "open", when: "" };
@@ -365,15 +508,19 @@ function renderChallenges(challenges, participants, pidToName, now) {
       if (effectiveImpossible) chipCls += " rcImpossible";
       else if (status === "open") chipCls += " rcOpen";
 
+      const title = isSetter
+        ? `${p.name} hat diese Challenge definiert – tippen zum Umschalten`
+        : `${p.name} – tippen zum Umschalten`;
+
       return `
-        <div class="${chipCls}" title="${isSetter ? safeText(p.name) + " hat diese Challenge definiert" : safeText(p.name)}">
-          <div class="rcIcon">${icon}</div>
-          <div class="rcName">${safeText(p.name)}</div>
-        </div>
+        <button type="button" class="${chipCls}" data-chid="${safeText(ch.id)}" data-pid="${safeText(p.id)}" title="${safeText(title)}">
+          <span class="rcIcon">${icon}</span>
+          <span class="rcName">${safeText(p.name)}</span>
+        </button>
       `;
     }).join("");
 
-    // Mini-Punkte für die eingeklappte Ansicht
+    // Mini-Dots (eingeklappt)
     const miniDots = participants.map(p => {
       const r = results[p.id] ?? { status: "open", when: "" };
       const status = r.status ?? "open";
@@ -388,16 +535,15 @@ function renderChallenges(challenges, participants, pidToName, now) {
       return `<span class="${dotCls}" title="${safeText(p.name)}"></span>`;
     }).join("");
 
-    // Neueste Challenge (idx 0 in challengesDesc) bleibt offen
     const isOpen = (idx === 0) ? " open" : "";
 
     return `
-      <details class="challengeCard" data-chid="${safeText(ch.id)}"${isOpen}>
+      <details class="challengeCard" data-chid="${safeText(ch.id)}" style="--pColor:${setterColor}"${isOpen}>
         <summary class="challengeSummary">
           <div class="challengeKw">${kwLabel}</div>
           <div class="challengeSummaryBody">
             <div class="challengeTitle">${safeText(ch.route ?? "—")}</div>
-            <div class="challengeMeta">von ${safeText(setByName)} · ${dateFmt}</div>
+            <div class="challengeMeta">von <span class="setterName">${safeText(setByName)}</span> · ${dateFmt}</div>
           </div>
           <div class="chMiniDots" aria-hidden="true">${miniDots}</div>
           <span class="chChevron" aria-hidden="true">▾</span>
@@ -413,6 +559,7 @@ function renderChallenges(challenges, participants, pidToName, now) {
 
   el.innerHTML = cards || `<p class="muted">Noch keine Challenges erfasst.</p>`;
   wireChallengeEdit();
+  wireChipTap();
 }
 
 /* ---------------- Admin ---------------- */
@@ -429,17 +576,12 @@ function renderAdmin(data, participants) {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     const date = `${yyyy}-${mm}-${dd}`;
-
     const week = getIsoWeek(date);
     const label = week ? `KW ${String(week).padStart(2, "0")}` : "";
-
     return {
-      date,
-      label,
-      route: "",
+      date, label, route: "",
       setBy: participants[0]?.id ?? "",
-      removedFrom: "",
-      notes: "",
+      removedFrom: "", notes: "",
       results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
     };
   })();
@@ -588,51 +730,25 @@ function applyDraftToUi(draft, participants) {
   const box = document.getElementById("admResults");
   box.innerHTML = participants.map(p => {
     const r = draft.results?.[p.id] ?? { status: "open", when: "" };
-    const icon = (r.status === "success" ? (r.when === "makeup" ? "✅⏳" : "✅")
-               : r.status === "fail"    ? (r.when === "makeup" ? "❌⏳" : "❌")
-               : "—");
+    const icon = statusToIcon(r.status, r.when, false);
     return `
       <button class="resultBtn" type="button" data-pid="${p.id}">
         <span>${safeText(p.name)}</span>
-        <span><small>${icon}</small></span>
+        <small>${icon}</small>
       </button>
     `;
   }).join("");
 
-  // Klickzyklus: offen → Erfolg → Erfolg + nachgeholt → Misserfolg → Misserfolg + nachgeholt → offen
   box.querySelectorAll(".resultBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       const pid = btn.getAttribute("data-pid");
       const d = readDraftFromUi(participants);
-
       const cur = d.results[pid] ?? { status: "open", when: "" };
-      const status = cur.status ?? "open";
-      const when = cur.when ?? "";
-      let nextStatus, nextWhen;
-
-      if (status === "open") {
-        nextStatus = "success";
-        nextWhen = "";
-      } else if (status === "success" && when !== "makeup") {
-        nextStatus = "success";
-        nextWhen = "makeup";
-      } else if (status === "success" && when === "makeup") {
-        nextStatus = "fail";
-        nextWhen = "";
-      } else if (status === "fail" && when !== "makeup") {
-        nextStatus = "fail";
-        nextWhen = "makeup";
-      } else {
-        nextStatus = "open";
-        nextWhen = "";
-      }
-
-      d.results[pid] = { status: nextStatus, when: nextWhen };
-
+      const nxt = nextStatus(cur.status, cur.when);
+      d.results[pid] = nxt;
       saveDraft(d);
       applyDraftToUi(d, participants);
       updateAdminPreview(window.__DATA__);
-      location.hash = "#";
     });
   });
 }
@@ -663,15 +779,12 @@ function loadDraft(participants) {
     const raw = localStorage.getItem("kletterliga_admin_draft");
     if (!raw) return null;
     const d = JSON.parse(raw);
-
     d.results = d.results ?? {};
     for (const p of participants) {
       if (!d.results[p.id]) d.results[p.id] = { status: "open", when: "" };
     }
     return d;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function saveDraft(draft) {
@@ -682,9 +795,32 @@ function clearDraft() {
   localStorage.removeItem("kletterliga_admin_draft");
 }
 
+/* ---------------- Tabs ---------------- */
+
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach(t => {
+    const active = t.dataset.tab === name;
+    t.classList.toggle("active", active);
+    t.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll(".tabPanel").forEach(p => {
+    p.hidden = (p.id !== `tab-${name}`);
+  });
+  // Nach oben scrollen innerhalb des Tabs
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function wireTabs() {
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => switchTab(t.dataset.tab));
+  });
+}
+
 /* ---------------- Boot ---------------- */
 
 async function main() {
+  wireTabs();
+
   const res = await fetch("data.json", { cache: "no-store" });
   let data = await res.json();
 

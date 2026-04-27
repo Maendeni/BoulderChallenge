@@ -2,7 +2,7 @@
   "season": {
     "name": "Boulder-Challenge 25/26",
     "start": "2025-09-17",
-    "end": "2026-06-30"
+    "totalChallenges": 30
   },
   "participants": [
     {
@@ -27,6 +27,7 @@
     }
   ],
   "challenges": [
+  
     {
       "id": "2026-04-22",
       "date": "2026-04-22",

@@ -1,75 +1,182 @@
 :root{
   --bg:#0b0f17;
-  --card:#111827;
+  --surface:#111827;
+  --surface2:#0f1621;
   --text:#e5e7eb;
   --muted:#9ca3af;
   --line:#1f2937;
   --accent:#38bdf8;
+  --success:#22c55e;
+  --fail:#ef4444;
+
+  /* Personen-Farben (5 Teilnehmer, per ID in JS zugewiesen) */
+  --p-dan:#38bdf8;   /* sky - ruhiger, souveräner Anker */
+  --p-geo:#a78bfa;   /* violet - intellektuell, präzise */
+  --p-flo:#f472b6;   /* pink - energisch, lebendig */
+  --p-mar:#22d3ee;   /* cyan - frisch, technisch */
+  --p-sab:#fbbf24;   /* amber - warm, sonnig */
 }
 
-*{ box-sizing:border-box; }
-html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-
-.container{ width:min(860px, 92vw); margin:0 auto; }
-.header{ padding:18px 0 8px; }
-.footer{ padding:18px 0 28px; }
-
-h1{ font-size:22px; margin:0; }
-h2{ font-size:16px; margin:0; }
-
-.muted{ color:var(--muted); margin:6px 0 0; font-size:13px; }
-
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
-  margin:12px 0;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+*{ box-sizing: border-box; }
+html,body{
+  margin:0; padding:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.cardHeader{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-bottom:10px;
+.container{
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 0 14px;
 }
 
-.cardHeaderRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+/* ---- Header ---- */
+.header{ padding: 16px 14px 12px; }
+h1{ font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+h2{ font-size: 15px; font-weight: 600; margin: 0; }
+.muted{ color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+
+.seasonBar{
+  margin-top: 10px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.seasonBar > div{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), #a78bfa);
+  width: 0%;
+  transition: width 0.6s ease;
 }
 
-.legendDetails summary{
-  cursor:pointer;
+.statStrip{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+.statCell{
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 8px;
+  text-align: center;
+  min-width: 0;
+}
+.statV{
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.statV.statAccent{ color: var(--accent); }
+.statL{
+  font-size: 10px;
   color: var(--muted);
-  font-size: 12px;
-  user-select:none;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
 }
 
+/* ---- Tab Bar ---- */
+.tabBar{
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 8px auto 6px;
+  background: var(--surface2);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.tab{
+  flex: 1;
+  padding: 9px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+.tab:hover{ color: var(--text); }
+.tab.active{
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.tabPanel{
+  padding: 6px 0 24px;
+  animation: fadeIn 0.2s ease-out;
+}
+.tabPanel[hidden]{ display: none; }
+
+@keyframes fadeIn{
+  from{ opacity: 0; transform: translateY(4px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Legende (in Detail-Matrix) ---- */
+.legendDetails{
+  margin-bottom: 10px;
+}
+.legendDetails summary{
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  user-select: none;
+  padding: 4px 2px;
+}
 .legend{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px 10px;
-  font-size:12px;
-  color:var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 2px 2px;
+}
+.legendSetter{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.legendSwatch{
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 2px solid var(--accent);
+  background: rgba(56, 189, 248, 0.15);
 }
 
 .badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:3px 8px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  color:var(--muted);
-  font-size:11px;
-  white-space:nowrap;
-  line-height:1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  line-height: 1.2;
 }
-
 .badgeAccent{
   border-color: rgba(56, 189, 248, 0.35);
   color: var(--text);
@@ -77,33 +184,35 @@ h2{ font-size:16px; margin:0; }
 
 code{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.95em;
+  font-size: 0.9em;
 }
 
-/* ---- Leaderboard Zeilen ---- */
+/* ---- Rangliste Zeilen ---- */
 .lbList{
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: 8px;
 }
 
 .lbRow{
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--line);
   background: rgba(255,255,255,0.02);
 }
 
 .lbRow.lbRowFirst{
-  border-color: rgba(56, 189, 248, 0.4);
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.04);
 }
 
 .lbRank{
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--muted);
   width: 16px;
   flex-shrink: 0;
@@ -120,9 +229,9 @@ code{
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
-  color: var(--accent);
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: var(--pColor, var(--accent));
+  background: color-mix(in srgb, var(--pColor, var(--accent)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pColor, var(--accent)) 30%, transparent);
 }
 
 .lbName{
@@ -131,6 +240,9 @@ code{
   color: var(--text);
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lbBarWrap{
@@ -141,18 +253,17 @@ code{
   overflow: hidden;
   min-width: 40px;
 }
-
 .lbBar{
   height: 100%;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--pColor, var(--accent));
   transition: width 0.4s ease;
 }
 
 .lbPts{
   font-size: 14px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--pColor, var(--accent));
   min-width: 36px;
   text-align: right;
 }
@@ -172,14 +283,15 @@ code{
 .matrixToggle{
   background: none;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--muted);
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 6px 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  font-family: inherit;
 }
 .matrixToggle:hover{ color: var(--text); border-color: rgba(56,189,248,0.3); }
 .matrixToggle .mtArrow{ display: inline-block; transition: transform 0.2s; }
@@ -193,15 +305,15 @@ code{
 .matrixWrap[hidden]{ display: none; }
 
 .matrix{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .matrixHeaderRow{
-  display:flex;
-  gap:10px;
-  align-items:stretch;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
 }
 
 .matrixNameCol{
@@ -209,208 +321,100 @@ code{
   min-width: 74px;
   flex: 0 0 74px;
   color: var(--muted);
-  font-size:12px;
-  display:flex;
-  align-items:center;
-  padding-left:2px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  padding-left: 2px;
 }
 
 .matrixScroll{
-  overflow-x:auto;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  border-radius:12px;
+  border-radius: 12px;
 }
 
 .weekRow, .iconRow{
-  display:flex;
-  gap:4px;
-  padding:4px 2px;
+  display: flex;
+  gap: 4px;
+  padding: 4px 2px;
 }
 
 .weekCell{
   min-width: 48px;
   height: 26px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid var(--line);
-  border-radius:12px;
-  font-size:11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 11px;
   color: var(--muted);
   background: rgba(0,0,0,0.18);
-  white-space:nowrap;
+  white-space: nowrap;
 }
-
 .weekCellLatest{
   border-color: rgba(56, 189, 248, 0.45);
   color: var(--text);
 }
 
 .playerBlock{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
   background: rgba(255,255,255,0.02);
 }
 
 .playerNameRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .playerName{
-  font-weight:700;
-  font-size:14px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--pColor, var(--text));
 }
 
 .playerBadges{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  gap:6px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .playerRow{
-  display:flex;
-  gap:8px;
-  margin-top:8px;
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .iconCell{
   min-width: 48px;
   height: 32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid var(--line);
-  border-radius:12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   background: rgba(0,0,0,0.18);
-  font-size:14px;
+  font-size: 14px;
 }
 
-/* Highlight result icons when the participant defined the challenge - KRÄFTIGER */
+/* Kräftiger Setter-Highlight */
 .iconCell.setterIcon{
   color: var(--accent);
   border: 2px solid var(--accent);
   background: rgba(56, 189, 248, 0.15);
   font-weight: 700;
-  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
 }
 
-/* Highlight the status icon inside person chips for the challenge setter */
-.personStatus.setterIcon{
-  color: var(--accent);
-  font-weight:600;
-}
-
-/* ---- Provide relative positioning for challenge cards so the edit button can be absolutely positioned ---- */
-.challengeCard{
-  position: relative;
-}
-
-/* ---- Challenge Tags ---- */
-.chTags{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 7px;
-}
-
-.chTag{
-  font-size: 11px;
-  color: var(--muted);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px 8px;
-  white-space: nowrap;
-}
-
-.chTagAccent{
-  color: #fbbf24;
-  background: rgba(251,191,36,0.08);
-  border-color: rgba(251,191,36,0.3);
-}
-
-/* ---- Result chips (kompakt, einheitlicher Stil) ---- */
-.resultChips{
-  display: flex;
-  gap: 5px;
-  margin-top: 10px;
-}
-
-.resultChip{
-  flex: 1;
-  border-radius: 10px;
-  padding: 6px 4px 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  background: rgba(0,0,0,0.18);
-  border: 1px solid var(--line);
-}
-
-.resultChip.rcOpen{
-  opacity: 0.55;
-}
-
-.resultChip.rcImpossible{
-  opacity: 0.5;
-}
-
-/* Setter-Highlight: deutlich sichtbar */
-.resultChip.rcSetter{
-  border: 2px solid var(--accent);
-  background: rgba(56, 189, 248, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2);
-}
-.resultChip.rcSetter .rcIcon{
-  color: var(--accent);
-}
-.resultChip.rcSetter .rcName{
-  color: var(--text);
-  font-weight: 600;
-}
-
-.rcIcon{
-  font-size: 14px;
-  line-height: 1;
-}
-
-.rcName{
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-/* Styling for the small edit button on challenge cards */
-.challengeEditBtn{
-  position: absolute;
-  top: 4px;
-  right: 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  cursor: pointer;
-  padding: 3px 7px;
-  line-height: 1;
-}
-.challengeEditBtn:hover{
-  color: var(--accent);
-  border-color: rgba(56, 189, 248, 0.4);
-  background: rgba(56, 189, 248, 0.08);
-}
-
-/* ---- Challenges (einklappbar) ---- */
+/* ---- Challenges (einklappbar, Tap zum Umschalten) ---- */
 .challengeCard{
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   margin: 8px 0;
   background: rgba(255,255,255,0.02);
   overflow: hidden;
@@ -436,10 +440,10 @@ code{
 
 .challengeKw{
   font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  background: rgba(56,189,248,0.1);
-  border: 1px solid rgba(56,189,248,0.25);
+  font-weight: 700;
+  color: var(--pColor, var(--accent));
+  background: color-mix(in srgb, var(--pColor, var(--accent)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pColor, var(--accent)) 30%, transparent);
   border-radius: 7px;
   padding: 3px 8px;
   white-space: nowrap;
@@ -453,14 +457,13 @@ code{
 
 .challengeTitle{
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--text);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .challengeCard[open] .challengeTitle{
   white-space: normal;
 }
@@ -470,8 +473,11 @@ code{
   font-size: 12px;
   margin-top: 3px;
 }
+.challengeMeta .setterName{
+  color: var(--pColor, var(--muted));
+  font-weight: 600;
+}
 
-/* Mini-Dots in der Summary (eingeklappt) */
 .chMiniDots{
   display: flex;
   gap: 4px;
@@ -486,8 +492,8 @@ code{
   display: inline-block;
   border: 1px solid transparent;
 }
-.chMiniDot.dotSuccess{ background: #22c55e; }
-.chMiniDot.dotFail{ background: #ef4444; }
+.chMiniDot.dotSuccess{ background: var(--success); }
+.chMiniDot.dotFail{ background: var(--fail); }
 .chMiniDot.dotOpen{ background: var(--line); }
 .chMiniDot.dotImpossible{ background: var(--muted); opacity: 0.4; }
 .chMiniDot.dotSetter{
@@ -497,7 +503,7 @@ code{
 
 .chChevron{
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -508,19 +514,111 @@ code{
   position: relative;
 }
 
-/* ---- Admin ---- */
-.adminDetails summary{
-  cursor:pointer;
-  color: var(--text);
-  font-size: 14px;
-  user-select:none;
+/* ---- Tags ---- */
+.chTags{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+.chTag{
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+.chTagAccent{
+  color: #fbbf24;
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.3);
 }
 
+/* ---- Result Chips (tap-fähig, zyklisieren Status) ---- */
+.resultChips{
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.resultChip{
+  flex: 1;
+  border-radius: 10px;
+  padding: 7px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: transform 0.08s, background 0.15s, border-color 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: inherit;
+  color: var(--text);
+  min-width: 0;
+}
+.resultChip:active{
+  transform: scale(0.96);
+  background: rgba(0,0,0,0.3);
+}
+
+.resultChip.rcOpen{ opacity: 0.55; }
+.resultChip.rcImpossible{ opacity: 0.5; }
+
+/* Setter-Chip: kräftiger blauer Rand */
+.resultChip.rcSetter{
+  border: 2px solid var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+.resultChip.rcSetter .rcIcon{ color: var(--accent); }
+.resultChip.rcSetter .rcName{
+  color: var(--text);
+  font-weight: 700;
+}
+
+.rcIcon{
+  font-size: 15px;
+  line-height: 1;
+}
+.rcName{
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Edit-Button */
+.challengeEditBtn{
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 9px;
+  line-height: 1;
+}
+.challengeEditBtn:hover{
+  color: var(--accent);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* ---- Admin ---- */
 .adminGrid{
-  margin-top:12px;
-  display:grid;
+  margin-top: 10px;
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap:10px;
+  gap: 10px;
 }
 
 @media (max-width: 520px){
@@ -528,113 +626,169 @@ code{
 }
 
 .field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-
 .fieldWide{
   grid-column: 1 / -1;
 }
-
 .field span{
-  font-size:12px;
+  font-size: 12px;
   color: var(--muted);
 }
-
 .field input, .field select{
-  width:100%;
-  padding:10px 10px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background: rgba(0,0,0,0.2);
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.25);
   color: var(--text);
   outline: none;
+  font-family: inherit;
+  font-size: 14px;
+}
+.field input:focus, .field select:focus{
+  border-color: rgba(56, 189, 248, 0.5);
 }
 
 .adminBlock{
-  margin-top:14px;
-  padding-top:12px;
-  border-top:1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 
 .adminBlockTitle{
-  font-size:12px;
+  font-size: 12px;
   color: var(--muted);
-  margin-bottom:10px;
+  margin-bottom: 10px;
 }
 
 .adminResults{
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap:8px;
+  gap: 6px;
 }
 
 @media (max-width: 520px){
-  .adminResults{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .adminResults{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 .resultBtn{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 8px;
   background: rgba(255,255,255,0.02);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  cursor:pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
   color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
 }
-
-.resultBtn small{ color: var(--muted); font-weight:600; }
+.resultBtn small{ color: var(--muted); font-weight: 600; font-size: 13px; }
 
 .adminActions{
-  margin-top:12px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .btn, .btnPrimary{
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
   background: rgba(255,255,255,0.02);
   color: var(--text);
-  cursor:pointer;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
 }
-
-.btnPrimary{ border-color: rgba(56, 189, 248, 0.45); }
+.btnPrimary{
+  border-color: rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--accent);
+  font-weight: 600;
+}
 .btn:active, .btnPrimary:active{ transform: translateY(1px); }
-
 .adminActions .btn, .adminActions .btnPrimary{ flex: 1 1 auto; }
 
 .adminTextarea{
-  width:100%;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background: rgba(0,0,0,0.25);
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.3);
   color: var(--text);
-  padding:10px;
+  padding: 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
+  font-size: 11px;
 }
 
-/* ---- Extra mobile compaction ---- */
+/* ---- Toast ---- */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 10px 9px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 50;
+  animation: toastIn 0.2s ease-out;
+  max-width: calc(100vw - 28px);
+}
+@keyframes toastIn{
+  from{ opacity: 0; transform: translate(-50%, 8px); }
+  to{ opacity: 1; transform: translate(-50%, 0); }
+}
+.toast[hidden]{ display: none; }
+.toast button{
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ---- Footer ---- */
+.footer{ padding: 18px 14px 28px; }
+
+/* ---- Mobile compaction ---- */
 @media (max-width: 520px){
-  .card{ padding:10px; }
-  /* further tighten columns on very small screens */
-  .matrixNameCol{ width: 60px; min-width:60px; flex: 0 0 60px; }
-  .weekCell{ min-width: 42px; font-size:10px; }
-  .iconCell{ min-width: 42px; height: 30px; font-size:13px; }
-  .playerBlock{ padding:9px; }
-  .playerName{ font-size:13px; }
-  .badge{ font-size:10.5px; padding:3px 7px; }
+  .header{ padding: 14px 14px 10px; }
+  h1{ font-size: 19px; }
+  .statV{ font-size: 16px; }
+  .statL{ font-size: 9.5px; }
+  .matrixNameCol{ width: 60px; min-width: 60px; flex: 0 0 60px; }
+  .weekCell{ min-width: 42px; font-size: 10px; }
+  .iconCell{ min-width: 42px; height: 30px; font-size: 13px; }
+  .playerBlock{ padding: 9px; }
+  .playerName{ font-size: 13px; }
+  .badge{ font-size: 10.5px; padding: 3px 7px; }
   .lbBarWrap{ display: none; }
   .lbDefined{ font-size: 10px; padding: 2px 7px; }
+  .challengeSummary{ padding: 10px 12px; }
+  .challengeTitle{ font-size: 14px; }
   .resultChips{ gap: 3px; }
-  .resultChip{ padding: 5px 2px 4px; }
-  .rcIcon{ font-size: 13px; }
-  .rcName{ font-size: 9px; }
+  .resultChip{ padding: 6px 2px 5px; }
+  .rcIcon{ font-size: 14px; }
+  .rcName{ font-size: 9.5px; }
+  .challengeBody{ padding: 0 12px 12px; }
 }
