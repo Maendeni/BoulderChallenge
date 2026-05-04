@@ -27,7 +27,37 @@
     }
   ],
   "challenges": [
-  
+    {
+      "id": "2026-04-29",
+      "date": "2026-04-29",
+      "label": "KW 18",
+      "route": "Rote 6 neue Halle",
+      "setBy": "Sab",
+      "removedFrom": null,
+      "notes": "Challenge vor Sabrinas Unfall 😢",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "success",
+          "when": ""
+        },
+        "Flo": {
+          "status": "open",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "success",
+          "when": ""
+        }
+      }
+    },
     {
       "id": "2026-04-22",
       "date": "2026-04-22",
