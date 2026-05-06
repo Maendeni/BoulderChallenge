@@ -28,6 +28,68 @@
   ],
   "challenges": [
     {
+      "id": "2026-05-06",
+      "date": "2026-05-06",
+      "label": "KW 19",
+      "route": "Pinke 7 links vom Überhang",
+      "setBy": "Mar",
+      "removedFrom": null,
+      "notes": "Boss ehrenhaft erst beim vierten Versuch erfolgreich",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "open",
+          "when": ""
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-04-15",
+      "date": "2026-04-15",
+      "label": "KW 16",
+      "route": "Grüne 8 hinten am Würfel in der alten Halle",
+      "setBy": "Dan",
+      "removedFrom": null,
+      "notes": "Am Schluss kleingriffig",
+      "results": {
+        "Dan": {
+          "status": "success",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": "makeup"
+        },
+        "Flo": {
+          "status": "fail",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "fail",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-04-22",
       "date": "2026-04-22",
       "label": "KW 17",
@@ -85,37 +147,6 @@
         },
         "Sab": {
           "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-04-15",
-      "date": "2026-04-15",
-      "label": "KW 16",
-      "route": "Grüne 8 hinten am Würfel in der alten Halle",
-      "setBy": "Dan",
-      "removedFrom": null,
-      "notes": "Am Schluss kleingriffig",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "open",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
           "when": ""
         }
       }
