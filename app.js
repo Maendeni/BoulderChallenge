@@ -839,7 +839,7 @@ function wireTabs() {
 async function main() {
   wireTabs();
 
-  const res = await fetch("data.json", { cache: "no-store" });
+  const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
   let data = await res.json();
 
   const local = localStorage.getItem("kletterliga_data_local");
