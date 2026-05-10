@@ -120,6 +120,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
         <div class="lbName">${safeText(r.name)}</div>
         <div class="lbBarWrap"><div class="lbBar" style="width:${pct}%"></div></div>
         <div class="lbPts">${r.points} P</div>
+        <div class="lbRate" title="${r.successes} von ${r.attempts} Versuchen">${r.successRate !== null ? r.successRate + "\u202f%" : "\u2014"}</div>
         <div class="lbDefined" title="Definierte Challenges">${r.defined}\u00a0def.</div>
       </div>
     `;
@@ -156,6 +157,7 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
           <div class="playerName">${safeText(r.name)}</div>
           <div class="playerBadges">
             <span class="badge badgeAccent">${r.points} P</span>
+            <span class="badge" title="${r.successes} von ${r.attempts} Versuchen">✓ ${r.successRate !== null ? r.successRate + " %" : "—"}</span>
             <span class="badge">Def.: ${r.defined}</span>
             <span class="badge">Offen: ${r.openPossible}</span>
             <span class="badge">🚫: ${r.openImpossible}</span>
@@ -444,7 +446,7 @@ function computeAndRenderAll(data) {
 
   const stats = Object.fromEntries(participants.map(p => [
     p.id,
-    { id: p.id, name: p.name, points: 0, defined: 0, openPossible: 0, openImpossible: 0 }
+    { id: p.id, name: p.name, points: 0, defined: 0, openPossible: 0, openImpossible: 0, successes: 0, attempts: 0 }
   ]));
 
   for (const ch of allChallenges) {
@@ -459,7 +461,13 @@ function computeAndRenderAll(data) {
         if (effectiveImpossible) stats[p.id].openImpossible += 1;
         else stats[p.id].openPossible += 1;
       }
+      if (status === "success") { stats[p.id].successes += 1; stats[p.id].attempts += 1; }
+      else if (status === "fail") { stats[p.id].attempts += 1; }
     }
+  }
+
+  for (const s of Object.values(stats)) {
+    s.successRate = s.attempts > 0 ? Math.round((s.successes / s.attempts) * 100) : null;
   }
 
   const leaderboard = Object.values(stats).sort((a, b) => {
