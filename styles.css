@@ -268,6 +268,19 @@ code{
   text-align: right;
 }
 
+.lbRate{
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  min-width: 44px;
+  text-align: center;
+}
+
 .lbDefined{
   font-size: 11px;
   font-weight: 600;
@@ -783,6 +796,7 @@ code{
   .playerName{ font-size: 13px; }
   .badge{ font-size: 10.5px; padding: 3px 7px; }
   .lbBarWrap{ display: none; }
+  .lbRate{ font-size: 10px; padding: 2px 7px; }
   .lbDefined{ font-size: 10px; padding: 2px 7px; }
   .challengeSummary{ padding: 10px 12px; }
   .challengeTitle{ font-size: 14px; }
