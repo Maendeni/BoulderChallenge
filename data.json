@@ -28,6 +28,68 @@
   ],
   "challenges": [
     {
+      "id": "2026-05-20",
+      "date": "2026-05-20",
+      "label": "KW 21",
+      "route": "Finale Challenge, blaue? 7 queergang",
+      "setBy": "Geo",
+      "removedFrom": null,
+      "notes": "",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "success",
+          "when": ""
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
+      "id": "2026-05-06",
+      "date": "2026-05-06",
+      "label": "KW 19",
+      "route": "Pinke 7 links vom Überhang",
+      "setBy": "Mar",
+      "removedFrom": null,
+      "notes": "Boss ehrenhaft erst beim vierten Versuch erfolgreich",
+      "results": {
+        "Dan": {
+          "status": "fail",
+          "when": ""
+        },
+        "Geo": {
+          "status": "fail",
+          "when": "makeup"
+        },
+        "Flo": {
+          "status": "success",
+          "when": ""
+        },
+        "Mar": {
+          "status": "success",
+          "when": ""
+        },
+        "Sab": {
+          "status": "open",
+          "when": ""
+        }
+      }
+    },
+    {
       "id": "2026-05-13",
       "date": "2026-05-13",
       "label": "KW 20",
@@ -49,8 +111,8 @@
           "when": ""
         },
         "Mar": {
-          "status": "open",
-          "when": ""
+          "status": "fail",
+          "when": "makeup"
         },
         "Sab": {
           "status": "open",
@@ -85,37 +147,6 @@
         },
         "Sab": {
           "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-05-06",
-      "date": "2026-05-06",
-      "label": "KW 19",
-      "route": "Pinke 7 links vom Überhang",
-      "setBy": "Mar",
-      "removedFrom": null,
-      "notes": "Boss ehrenhaft erst beim vierten Versuch erfolgreich",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "open",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "open",
           "when": ""
         }
       }
