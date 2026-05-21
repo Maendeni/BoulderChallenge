@@ -472,6 +472,10 @@ function computeAndRenderAll(data) {
 
   const leaderboard = Object.values(stats).sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
+    // Bei Gleichstand: höhere Erfolgsrate vorn (null = noch keine Versuche = 0)
+    const rateA = a.successRate ?? 0;
+    const rateB = b.successRate ?? 0;
+    if (rateB !== rateA) return rateB - rateA;
     return a.name.localeCompare(b.name, "de");
   });
 
