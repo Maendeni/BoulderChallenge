@@ -56,7 +56,12 @@ function computeEffectiveImpossible(challenge, status, now) {
 function byNewestFirst(a, b) { return parseISODate(b.date) - parseISODate(a.date); }
 function byOldestFirst(a, b) { return parseISODate(a.date) - parseISODate(b.date); }
 
-function safeText(s) { return String(s ?? ""); }
+const HTML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+
+// Escaped für HTML-Text und Attribute (Routennamen dürfen " und & enthalten)
+function safeText(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => HTML_ESCAPES[c]);
+}
 
 function getWeekLabel(ch) {
   if (ch.label && String(ch.label).trim()) return String(ch.label).trim();
@@ -69,6 +74,183 @@ function getSetterInitial(ch, pidToName) {
   const name = pidToName[ch.setBy] ?? ch.setBy ?? "";
   const c = String(name).trim().charAt(0);
   return c ? c.toUpperCase() : "";
+}
+
+/* ---------------- Saisons ---------------- */
+
+const LS_DATA = "kletterliga_data_v2";
+const LS_DATA_LEGACY = "kletterliga_data_local";
+const SS_SEASON = "kletterliga_season";
+
+function seasonIdFromName(name, start) {
+  const m = String(name ?? "").match(/(\d{2})\s*\/\s*(\d{2})/);
+  if (m) return `20${m[1]}-${m[2]}`;
+  const year = String(start ?? "").slice(0, 4);
+  return year || "saison";
+}
+
+function shortNameFromName(name) {
+  const m = String(name ?? "").match(/\d{2}\s*\/\s*\d{2}/);
+  return m ? m[0].replace(/\s+/g, "") : String(name ?? "Saison");
+}
+
+// Altes Format (eine Saison direkt auf oberster Ebene) → seasons[].
+// Greift für data.json genauso wie für alte localStorage-Stände.
+function migrateData(raw) {
+  if (!raw || typeof raw !== "object") return { schemaVersion: 2, currentSeasonId: null, seasons: [] };
+  if (Array.isArray(raw.seasons)) return raw;
+
+  const legacy = raw.season ?? {};
+  const name = legacy.name ?? "Boulder-Challenge";
+  const id = seasonIdFromName(name, legacy.start);
+
+  return {
+    schemaVersion: 2,
+    currentSeasonId: id,
+    seasons: [{
+      id,
+      name,
+      shortName: shortNameFromName(name),
+      start: legacy.start ?? null,
+      totalChallenges: legacy.totalChallenges ?? 0,
+      archived: false,
+      participants: raw.participants ?? [],
+      challenges: raw.challenges ?? []
+    }]
+  };
+}
+
+// Lokaler Stand gewinnt für die Inhalte (Teilnehmer/Challenges),
+// data.json gewinnt für die Metadaten (Name, Archiv-Flag, aktuelle Saison).
+// So taucht eine neu veröffentlichte Saison auch bei Leuten auf,
+// die schon einen lokalen Stand im Browser haben.
+// Archivierte Saisons sind abgeschlossen: dort gilt immer data.json.
+function mergeLocalIntoRemote(remote, local) {
+  if (!local || !Array.isArray(local.seasons)) return remote;
+
+  const localById = new Map(local.seasons.map(s => [s.id, s]));
+  const seasons = (remote.seasons ?? []).map(s => {
+    const l = localById.get(s.id);
+    localById.delete(s.id);
+    if (!l || s.archived) return s;
+    return {
+      ...s,
+      participants: l.participants ?? s.participants,
+      challenges: l.challenges ?? s.challenges
+    };
+  });
+
+  // Saisons, die es nur lokal gibt (noch nicht committet), bleiben erhalten
+  for (const l of localById.values()) seasons.push(l);
+
+  return { ...remote, seasons };
+}
+
+// Neueste zuerst
+function getSeasons(doc) {
+  return [...(doc?.seasons ?? [])].sort(
+    (a, b) => String(b.start ?? b.id).localeCompare(String(a.start ?? a.id))
+  );
+}
+
+function getActiveSeason(doc) {
+  const seasons = doc?.seasons ?? [];
+  return seasons.find(s => s.id === window.__SEASON_ID__)
+      ?? seasons.find(s => s.id === doc?.currentSeasonId)
+      ?? seasons[0]
+      ?? null;
+}
+
+function activeParticipants() {
+  return window.__SEASON__?.participants ?? [];
+}
+
+function isArchived() {
+  return !!window.__SEASON__?.archived;
+}
+
+// URL-Parameter > Auswahl in diesem Tab > aktuelle Saison aus data.json
+function resolveInitialSeasonId(doc) {
+  const ids = new Set((doc?.seasons ?? []).map(s => s.id));
+
+  const fromUrl = new URLSearchParams(location.search).get("season");
+  if (fromUrl && ids.has(fromUrl)) return fromUrl;
+
+  try {
+    const fromSession = sessionStorage.getItem(SS_SEASON);
+    if (fromSession && ids.has(fromSession)) return fromSession;
+  } catch {}
+
+  if (doc?.currentSeasonId && ids.has(doc.currentSeasonId)) return doc.currentSeasonId;
+  return (doc?.seasons ?? [])[0]?.id ?? null;
+}
+
+function setSeason(id) {
+  const doc = window.__DATA__;
+  if (!doc || !(doc.seasons ?? []).some(s => s.id === id)) return;
+
+  window.__SEASON_ID__ = id;
+  window.__editingChallengeId = null;
+  clearDraft();
+
+  try { sessionStorage.setItem(SS_SEASON, id); } catch {}
+
+  // Teilbare Links auf die Archiv-Saison
+  const url = new URL(location.href);
+  if (id === doc.currentSeasonId) url.searchParams.delete("season");
+  else url.searchParams.set("season", id);
+  history.replaceState(null, "", url);
+
+  computeAndRenderAll(doc);
+}
+
+function renderSeasonSwitcher(doc, activeSeason) {
+  const sel = document.getElementById("seasonSelect");
+  if (!sel) return;
+
+  const seasons = getSeasons(doc);
+  sel.hidden = seasons.length < 2;
+
+  sel.innerHTML = seasons.map(s => {
+    const label = `${s.shortName ?? s.name}${s.archived ? " · Archiv" : ""}`;
+    const selected = s.id === activeSeason?.id ? " selected" : "";
+    return `<option value="${safeText(s.id)}"${selected}>${safeText(label)}</option>`;
+  }).join("");
+
+  if (!sel.dataset.wired) {
+    sel.dataset.wired = "1";
+    sel.addEventListener("change", () => setSeason(sel.value));
+  }
+}
+
+/* ---------------- Lokaler Speicher ---------------- */
+
+function saveLocal(doc) {
+  try { localStorage.setItem(LS_DATA, JSON.stringify(doc)); } catch {}
+}
+
+function loadLocalDoc() {
+  try {
+    const raw = localStorage.getItem(LS_DATA);
+    if (raw) return migrateData(JSON.parse(raw));
+
+    // Einmalige Übernahme eines Standes aus der Zeit vor den Saisons
+    const legacy = localStorage.getItem(LS_DATA_LEGACY);
+    if (legacy) {
+      const migrated = migrateData(JSON.parse(legacy));
+      saveLocal(migrated);
+      localStorage.removeItem(LS_DATA_LEGACY);
+      return migrated;
+    }
+  } catch {}
+  return null;
+}
+
+function clearLocal() {
+  try {
+    localStorage.removeItem(LS_DATA);
+    localStorage.removeItem(LS_DATA_LEGACY);
+  } catch {}
 }
 
 /* ---------------- Personen-Farben ---------------- */
@@ -84,23 +266,78 @@ const PERSON_COLOR_PALETTE = [
   "#fbbf24", // amber
   "#4ade80", // green (Reserve)
   "#fb7185", // rose (Reserve)
+  "#2dd4bf", // teal (Reserve)
+  "#fb923c", // orange (Reserve)
 ];
 
-function buildPersonColorMap(participants) {
+// Farben werden über alle Saisons hinweg vergeben (älteste zuerst),
+// damit dieselbe Person in Archiv und aktueller Saison gleich aussieht.
+function buildPersonColorMap(doc) {
+  const oldestFirst = [...(doc?.seasons ?? [])].sort(
+    (a, b) => String(a.start ?? a.id).localeCompare(String(b.start ?? b.id))
+  );
+
   const map = {};
-  participants.forEach((p, idx) => {
-    map[p.id] = PERSON_COLOR_PALETTE[idx % PERSON_COLOR_PALETTE.length];
-  });
+  let idx = 0;
+  for (const season of oldestFirst) {
+    for (const p of (season.participants ?? [])) {
+      if (map[p.id] === undefined) {
+        map[p.id] = PERSON_COLOR_PALETTE[idx % PERSON_COLOR_PALETTE.length];
+        idx += 1;
+      }
+    }
+  }
   return map;
 }
 
 /* ---------------- Rangliste (Zeilen + Matrix) ---------------- */
 
+function plural(n, one, many) { return n === 1 ? one : many; }
+
+// ▲/▼ gegenüber dem Stand vor der jüngsten Challenge
+function renderRankDelta(delta) {
+  if (delta === null || delta === undefined) {
+    return `<div class="lbDelta lbDeltaEmpty" aria-hidden="true"></div>`;
+  }
+  if (delta > 0) {
+    const t = `${delta} ${plural(delta, "Platz", "Plätze")} gut gemacht`;
+    return `<div class="lbDelta lbDeltaUp" title="${safeText(t)}">▲${delta}</div>`;
+  }
+  if (delta < 0) {
+    const n = -delta;
+    const t = `${n} ${plural(n, "Platz", "Plätze")} verloren`;
+    return `<div class="lbDelta lbDeltaDown" title="${safeText(t)}">▼${n}</div>`;
+  }
+  return `<div class="lbDelta lbDeltaSame" title="Rang unverändert">–</div>`;
+}
+
+// Formkurve: die letzten Challenges als Punkte, jüngste rechts
+function renderForm(form) {
+  if (!form || !form.length) return `<div class="lbForm"></div>`;
+
+  const dots = form.map((f, idx) => {
+    let cls = "lbFormDot";
+    if (f.impossible) cls += " dotImpossible";
+    else if (f.status === "success") cls += " dotSuccess";
+    else if (f.status === "fail") cls += " dotFail";
+    else cls += " dotOpen";
+    if (f.when === "makeup") cls += " dotMakeup";
+    if (idx === form.length - 1) cls += " dotLatest";
+
+    const icon = statusToIcon(f.status, f.when, f.impossible);
+    const setter = f.isSetter ? " · selbst definiert" : "";
+    const title = `${f.label || fmtDateDE(f.date)}: ${icon}${setter}`;
+    return `<span class="${cls}" title="${safeText(title)}"></span>`;
+  }).join("");
+
+  return `<div class="lbForm" title="Letzte ${form.length} ${plural(form.length, "Challenge", "Challenges")}">${dots}</div>`;
+}
+
 function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, pidToName, pidToColor, now) {
   const el = document.getElementById("leaderboard");
 
-  if (!challengesAsc.length) {
-    el.innerHTML = `<p class="muted">Noch keine Challenges erfasst.</p>`;
+  if (!leaderboardRows.length) {
+    el.innerHTML = `<p class="muted">Für diese Saison sind noch keine Teilnehmer erfasst.</p>`;
     return;
   }
 
@@ -116,8 +353,10 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
     return `
       <div class="lbRow${isFirst ? " lbRowFirst" : ""}" style="--pColor:${color}">
         <div class="lbRank">${idx + 1}</div>
+        ${renderRankDelta(r.rankDelta)}
         <div class="lbAvatar">${safeText(initial)}</div>
         <div class="lbName">${safeText(r.name)}</div>
+        ${renderForm(r.form)}
         <div class="lbBarWrap"><div class="lbBar" style="width:${pct}%"></div></div>
         <div class="lbPts">${r.points} P</div>
         <div class="lbRate" title="${r.successes} von ${r.attempts} Versuchen">${r.successRate !== null ? r.successRate + "\u202f%" : "\u2014"}</div>
@@ -172,6 +411,15 @@ function renderLeaderboardMatrix(leaderboardRows, challengesAsc, participants, p
       </div>
     `;
   }).join("");
+
+  // Saisonstart: Teilnehmer stehen schon, Challenges noch nicht
+  if (!challengesAsc.length) {
+    el.innerHTML = `
+      <div class="lbList">${rowsHtml}</div>
+      <p class="muted lbEmptyHint">Noch keine Challenges erfasst – die Saison kann losgehen. 🧗</p>
+    `;
+    return;
+  }
 
   el.innerHTML = `
     <div class="lbList">${rowsHtml}</div>
@@ -233,10 +481,10 @@ window.__editingChallengeId = null;
 
 function startEditChallenge(chId) {
   try {
-    const data = window.__DATA__;
-    if (!data || !data.challenges) return;
-    const participants = data.participants ?? [];
-    const ch = data.challenges.find(c => c.id === chId);
+    const season = window.__SEASON__;
+    if (!season || isArchived()) return;
+    const participants = season.participants ?? [];
+    const ch = (season.challenges ?? []).find(c => c.id === chId);
     if (!ch) return;
     window.__editingChallengeId = chId;
     const draft = {
@@ -298,9 +546,10 @@ function wireChipTap() {
 }
 
 function cycleChallengeStatus(chId, pid) {
-  const data = window.__DATA__;
-  if (!data) return;
-  const ch = (data.challenges ?? []).find(c => c.id === chId);
+  const doc = window.__DATA__;
+  const season = window.__SEASON__;
+  if (!doc || !season || isArchived()) return;
+  const ch = (season.challenges ?? []).find(c => c.id === chId);
   if (!ch) return;
   ch.results = ch.results ?? {};
   const prev = ch.results[pid] ?? { status: "open", when: "" };
@@ -315,24 +564,25 @@ function cycleChallengeStatus(chId, pid) {
   ch.results[pid] = next;
 
   // Persistieren und neu rendern
-  localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
+  saveLocal(doc);
 
   // Feedback
   if (navigator.vibrate) { try { navigator.vibrate(8); } catch {} }
-  const participants = data.participants ?? [];
+  const participants = season.participants ?? [];
   const pname = (participants.find(p => p.id === pid) || {}).name ?? pid;
   const icon = statusToIcon(next.status, next.when, false);
   showToast(`${pname}: ${icon}`, () => {
     // Undo
     const d = window.__DATA__;
-    const c = (d.challenges ?? []).find(x => x.id === chId);
+    const s = getActiveSeason(d);
+    const c = (s?.challenges ?? []).find(x => x.id === chId);
     if (!c) return;
     c.results[pid] = window.__lastChipChange.prev;
-    localStorage.setItem("kletterliga_data_local", JSON.stringify(d));
+    saveLocal(d);
     computeAndRenderAll(d);
   });
 
-  computeAndRenderAll(data);
+  computeAndRenderAll(doc);
 }
 
 /* ---------------- Toast ---------------- */
@@ -368,11 +618,15 @@ function hideToast() {
 
 /* ---------------- Saison-Fortschritt + Stats ---------------- */
 
-function renderSeasonHeader(data, allChallenges, leaderboardRows, now) {
-  const title = data.season?.name ?? "Boulder-Challenge";
+function renderSeasonHeader(season, allChallenges, leaderboardRows, now) {
+  const title = season?.name ?? "Boulder-Challenge";
   document.getElementById("seasonTitle").textContent = title;
+  document.title = title;
 
-  const totalChallenges = data.season?.totalChallenges ?? 0;
+  const badge = document.getElementById("archiveBadge");
+  if (badge) badge.hidden = !season?.archived;
+
+  const totalChallenges = season?.totalChallenges ?? 0;
   const doneChallenges = allChallenges.length;
   const openChallenges = Math.max(0, totalChallenges - doneChallenges);
 
@@ -430,26 +684,18 @@ function renderSeasonHeader(data, allChallenges, leaderboardRows, now) {
   }
 }
 
-/* ---------------- Gesamtrender ---------------- */
+/* ---------------- Rangliste berechnen ---------------- */
 
-function computeAndRenderAll(data) {
-  const now = todayUTC();
-
-  const allChallenges = data.challenges ?? [];
-  const challengesDesc = [...allChallenges].sort(byNewestFirst);
-  const challengesAsc = [...allChallenges].sort(byOldestFirst);
-
-  const participants = data.participants ?? [];
-  const pidToName = Object.fromEntries(participants.map(p => [p.id, p.name]));
-  const pidToColor = buildPersonColorMap(participants);
-  window.__pidToColor = pidToColor;
-
+// Liefert die sortierte Rangliste für eine Menge von Challenges.
+// Wird zweimal aufgerufen: einmal für den aktuellen Stand und einmal
+// für den Stand vor der jüngsten Challenge (→ Rangveränderung).
+function computeStandings(challenges, participants, now) {
   const stats = Object.fromEntries(participants.map(p => [
     p.id,
     { id: p.id, name: p.name, points: 0, defined: 0, openPossible: 0, openImpossible: 0, successes: 0, attempts: 0 }
   ]));
 
-  for (const ch of allChallenges) {
+  for (const ch of challenges) {
     if (ch.setBy && stats[ch.setBy]) stats[ch.setBy].defined += 1;
     const results = ch.results ?? {};
     for (const p of participants) {
@@ -470,7 +716,7 @@ function computeAndRenderAll(data) {
     s.successRate = s.attempts > 0 ? Math.round((s.successes / s.attempts) * 100) : null;
   }
 
-  const leaderboard = Object.values(stats).sort((a, b) => {
+  return Object.values(stats).sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
     // Bei Gleichstand: höhere Erfolgsrate vorn (null = noch keine Versuche = 0)
     const rateA = a.successRate ?? 0;
@@ -478,18 +724,81 @@ function computeAndRenderAll(data) {
     if (rateB !== rateA) return rateB - rateA;
     return a.name.localeCompare(b.name, "de");
   });
+}
 
-  renderSeasonHeader(data, allChallenges, leaderboard, now);
+// Wie viele Challenges die Formkurve zeigt
+const FORM_LENGTH = 5;
+
+// Ergänzt jede Zeile um rankDelta (Plätze gut/schlecht seit der
+// vorletzten Challenge) und form (die letzten Ergebnisse).
+function addTrendInfo(rows, challengesAsc, participants, now) {
+  const prevRank = {};
+  if (challengesAsc.length >= 2) {
+    computeStandings(challengesAsc.slice(0, -1), participants, now)
+      .forEach((r, idx) => { prevRank[r.id] = idx + 1; });
+  }
+
+  const recent = challengesAsc.slice(-FORM_LENGTH);
+
+  rows.forEach((row, idx) => {
+    const before = prevRank[row.id];
+    row.rankDelta = before ? before - (idx + 1) : null;
+
+    row.form = recent.map(ch => {
+      const r = (ch.results ?? {})[row.id] ?? { status: "open", when: "" };
+      const status = r.status ?? "open";
+      return {
+        status,
+        when: r.when ?? "",
+        impossible: computeEffectiveImpossible(ch, status, now),
+        isSetter: ch.setBy === row.id,
+        label: getWeekLabel(ch),
+        date: ch.date
+      };
+    });
+  });
+
+  return rows;
+}
+
+/* ---------------- Gesamtrender ---------------- */
+
+function computeAndRenderAll(doc) {
+  const now = todayUTC();
+
+  const season = getActiveSeason(doc);
+  window.__DATA__ = doc;
+  window.__SEASON__ = season;
+  window.__SEASON_ID__ = season?.id ?? null;
+
+  const allChallenges = season?.challenges ?? [];
+  const challengesDesc = [...allChallenges].sort(byNewestFirst);
+  const challengesAsc = [...allChallenges].sort(byOldestFirst);
+
+  const participants = season?.participants ?? [];
+  const pidToName = Object.fromEntries(participants.map(p => [p.id, p.name]));
+  const pidToColor = buildPersonColorMap(doc);
+  window.__pidToColor = pidToColor;
+
+  const leaderboard = addTrendInfo(
+    computeStandings(allChallenges, participants, now),
+    challengesAsc,
+    participants,
+    now
+  );
+
+  const readOnly = !!season?.archived;
+
+  renderSeasonSwitcher(doc, season);
+  renderSeasonHeader(season, allChallenges, leaderboard, now);
   renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, pidToColor, now);
-  renderChallenges(challengesDesc, participants, pidToName, pidToColor, now);
-  renderAdmin(data, participants);
-
-  window.__DATA__ = data;
+  renderChallenges(challengesDesc, participants, pidToName, pidToColor, now, readOnly);
+  renderAdmin(doc, season, participants);
 }
 
 /* ---------------- Challenges (Karten) ---------------- */
 
-function renderChallenges(challenges, participants, pidToName, pidToColor, now) {
+function renderChallenges(challenges, participants, pidToName, pidToColor, now, readOnly = false) {
   const el = document.getElementById("challenges");
 
   const asc = [...challenges].sort(byOldestFirst);
@@ -513,7 +822,9 @@ function renderChallenges(challenges, participants, pidToName, pidToColor, now) 
     }
     const tagsHtml = tags.length ? `<div class="chTags">${tags.join("")}</div>` : "";
 
-    const editBtn = `<button class="challengeEditBtn" data-chid="${safeText(ch.id)}" type="button" title="Bearbeiten">✏️ bearbeiten</button>`;
+    const editBtn = readOnly
+      ? ""
+      : `<button class="challengeEditBtn" data-chid="${safeText(ch.id)}" type="button" title="Bearbeiten">✏️ bearbeiten</button>`;
 
     // Ergebnis-Chips (tap-fähig)
     const results = ch.results ?? {};
@@ -529,10 +840,20 @@ function renderChallenges(challenges, participants, pidToName, pidToColor, now) 
       if (isSetter) chipCls += " rcSetter";
       if (effectiveImpossible) chipCls += " rcImpossible";
       else if (status === "open") chipCls += " rcOpen";
+      if (readOnly) chipCls += " rcStatic";
 
-      const title = isSetter
-        ? `${p.name} hat diese Challenge definiert – tippen zum Umschalten`
-        : `${p.name} – tippen zum Umschalten`;
+      const setterHint = isSetter ? `${p.name} hat diese Challenge definiert` : p.name;
+      const title = readOnly ? setterHint : `${setterHint} – tippen zum Umschalten`;
+
+      // Archivierte Saison: Chips nur noch anzeigen, nicht mehr umschaltbar
+      if (readOnly) {
+        return `
+          <span class="${chipCls}" title="${safeText(title)}">
+            <span class="rcIcon">${icon}</span>
+            <span class="rcName">${safeText(p.name)}</span>
+          </span>
+        `;
+      }
 
       return `
         <button type="button" class="${chipCls}" data-chid="${safeText(ch.id)}" data-pid="${safeText(p.id)}" title="${safeText(title)}">
@@ -586,39 +907,55 @@ function renderChallenges(challenges, participants, pidToName, pidToColor, now) 
 
 /* ---------------- Admin ---------------- */
 
-function renderAdmin(data, participants) {
-  window.__DATA__ = data;
+function emptyDraft(participants) {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const date = `${yyyy}-${mm}-${dd}`;
+  const week = getIsoWeek(date);
+  const label = week ? `KW ${String(week).padStart(2, "0")}` : "";
+  return {
+    date, label, route: "",
+    setBy: participants[0]?.id ?? "",
+    removedFrom: "", notes: "",
+    results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
+  };
+}
+
+const ADMIN_FIELD_IDS = ["admDate", "admLabel", "admRoute", "admSetBy", "admRemovedFrom", "admNotes", "admAdd"];
+
+function renderAdmin(doc, season, participants) {
+  const archived = !!season?.archived;
+
+  const note = document.getElementById("admArchivedNote");
+  if (note) {
+    note.hidden = !archived;
+    note.textContent = archived
+      ? `„${season?.name ?? "Diese Saison"}“ ist archiviert – Bearbeiten ist deaktiviert. Oben auf die laufende Saison wechseln, um Challenges zu erfassen.`
+      : "";
+  }
 
   const setBy = document.getElementById("admSetBy");
-  if (setBy) setBy.innerHTML = participants.map(p => `<option value="${p.id}">${safeText(p.name)}</option>`).join("");
+  if (setBy) setBy.innerHTML = participants.map(p => `<option value="${safeText(p.id)}">${safeText(p.name)}</option>`).join("");
 
-  const draft = loadDraft(participants) ?? (() => {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const date = `${yyyy}-${mm}-${dd}`;
-    const week = getIsoWeek(date);
-    const label = week ? `KW ${String(week).padStart(2, "0")}` : "";
-    return {
-      date, label, route: "",
-      setBy: participants[0]?.id ?? "",
-      removedFrom: "", notes: "",
-      results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
-    };
-  })();
+  const draft = loadDraft(participants) ?? emptyDraft(participants);
+  applyDraftToUi(draft, participants, archived);
 
-  applyDraftToUi(draft, participants);
+  ADMIN_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = archived;
+  });
 
   if (!window.__adminWired) {
-    wireAdminHandlers(participants);
+    wireAdminHandlers();
     window.__adminWired = true;
   }
 
-  updateAdminPreview(window.__DATA__);
+  updateAdminPreview(doc);
 }
 
-function wireAdminHandlers(participants) {
+function wireAdminHandlers() {
   const elDate = document.getElementById("admDate");
   const elLabel = document.getElementById("admLabel");
   const elRoute = document.getElementById("admRoute");
@@ -632,7 +969,7 @@ function wireAdminHandlers(participants) {
   const btnReset = document.getElementById("admResetLocal");
 
   const syncDraft = () => {
-    const draft = readDraftFromUi(participants);
+    const draft = readDraftFromUi(activeParticipants());
     saveDraft(draft);
     updateAdminPreview(window.__DATA__);
   };
@@ -653,7 +990,7 @@ function wireAdminHandlers(participants) {
 
   if (btnReset) {
     btnReset.addEventListener("click", () => {
-      localStorage.removeItem("kletterliga_data_local");
+      clearLocal();
       clearDraft();
       location.reload();
     });
@@ -661,9 +998,11 @@ function wireAdminHandlers(participants) {
 
   if (btnAdd) {
     btnAdd.addEventListener("click", () => {
-      const data = window.__DATA__;
-      if (!data) return;
+      const doc = window.__DATA__;
+      const season = window.__SEASON__;
+      if (!doc || !season || isArchived()) return;
 
+      const participants = activeParticipants();
       const draft = readDraftFromUi(participants);
 
       if (!draft.date || !draft.route || !draft.setBy) {
@@ -682,19 +1021,19 @@ function wireAdminHandlers(participants) {
         results: draft.results
       };
 
-      data.challenges = data.challenges ?? [];
+      season.challenges = season.challenges ?? [];
 
       if (window.__editingChallengeId) {
-        const idx = data.challenges.findIndex(c => c.id === window.__editingChallengeId);
-        if (idx !== -1) data.challenges.splice(idx, 1);
-        data.challenges.unshift(updatedChallenge);
+        const idx = season.challenges.findIndex(c => c.id === window.__editingChallengeId);
+        if (idx !== -1) season.challenges.splice(idx, 1);
+        season.challenges.unshift(updatedChallenge);
         window.__editingChallengeId = null;
         btnAdd.textContent = "Challenge hinzufügen";
       } else {
-        data.challenges.unshift(updatedChallenge);
+        season.challenges.unshift(updatedChallenge);
       }
 
-      localStorage.setItem("kletterliga_data_local", JSON.stringify(data));
+      saveLocal(doc);
 
       const week = getIsoWeek(draft.date);
       const nextLabel = week ? `KW ${String(week).padStart(2, "0")}` : "";
@@ -710,7 +1049,7 @@ function wireAdminHandlers(participants) {
       saveDraft(fresh);
       applyDraftToUi(fresh, participants);
 
-      computeAndRenderAll(data);
+      computeAndRenderAll(doc);
     });
   }
 
@@ -741,7 +1080,7 @@ function wireAdminHandlers(participants) {
   }
 }
 
-function applyDraftToUi(draft, participants) {
+function applyDraftToUi(draft, participants, disabled = false) {
   document.getElementById("admDate").value = draft.date || "";
   document.getElementById("admLabel").value = draft.label || "";
   document.getElementById("admRoute").value = draft.route || "";
@@ -754,12 +1093,14 @@ function applyDraftToUi(draft, participants) {
     const r = draft.results?.[p.id] ?? { status: "open", when: "" };
     const icon = statusToIcon(r.status, r.when, false);
     return `
-      <button class="resultBtn" type="button" data-pid="${p.id}">
+      <button class="resultBtn" type="button" data-pid="${safeText(p.id)}"${disabled ? " disabled" : ""}>
         <span>${safeText(p.name)}</span>
         <small>${icon}</small>
       </button>
     `;
   }).join("");
+
+  if (disabled) return;
 
   box.querySelectorAll(".resultBtn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -844,15 +1185,11 @@ async function main() {
   wireTabs();
 
   const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
-  let data = await res.json();
+  const remote = migrateData(await res.json());
+  const doc = mergeLocalIntoRemote(remote, loadLocalDoc());
 
-  const local = localStorage.getItem("kletterliga_data_local");
-  if (local) {
-    try { data = JSON.parse(local); } catch {}
-  }
-
-  window.__DATA__ = data;
-  computeAndRenderAll(data);
+  window.__SEASON_ID__ = resolveInitialSeasonId(doc);
+  computeAndRenderAll(doc);
 }
 
 main().catch(err => {

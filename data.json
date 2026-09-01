@@ -1,930 +1,960 @@
 {
-  "season": {
-    "name": "Boulder-Challenge 25/26",
-    "start": "2025-09-17",
-    "totalChallenges": 29
-  },
-  "participants": [
+  "schemaVersion": 2,
+  "currentSeasonId": "2026-27",
+  "seasons": [
     {
-      "id": "Dan",
-      "name": "Dan"
-    },
-    {
-      "id": "Geo",
-      "name": "Geo"
-    },
-    {
-      "id": "Flo",
-      "name": "Flo"
-    },
-    {
-      "id": "Mar",
-      "name": "Mar"
-    },
-    {
-      "id": "Sab",
-      "name": "Sab"
-    }
-  ],
-  "challenges": [
-    {
-      "id": "2026-05-20",
-      "date": "2026-05-20",
-      "label": "KW 21",
-      "route": "Finale Challenge, blaue? 7 queergang",
-      "setBy": "Geo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
+      "id": "2026-27",
+      "name": "Boulder-Challenge 26/27",
+      "shortName": "26/27",
+      "start": "2026-08-26",
+      "totalChallenges": 30,
+      "archived": false,
+      "participants": [
+        {
+          "id": "Dan",
+          "name": "Dan"
         },
-        "Geo": {
-          "status": "success",
-          "when": ""
+        {
+          "id": "Flo",
+          "name": "Flo"
         },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "open",
-          "when": ""
+        {
+          "id": "Mar",
+          "name": "Mar"
         }
-      }
+      ],
+      "challenges": []
     },
     {
-      "id": "2026-05-06",
-      "date": "2026-05-06",
-      "label": "KW 19",
-      "route": "Pinke 7 links vom Überhang",
-      "setBy": "Mar",
-      "removedFrom": null,
-      "notes": "Boss ehrenhaft erst beim vierten Versuch erfolgreich",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
+      "id": "2025-26",
+      "name": "Boulder-Challenge 25/26",
+      "shortName": "25/26",
+      "start": "2025-09-17",
+      "totalChallenges": 29,
+      "archived": true,
+      "participants": [
+        {
+          "id": "Dan",
+          "name": "Dan"
         },
-        "Geo": {
-          "status": "fail",
-          "when": "makeup"
+        {
+          "id": "Geo",
+          "name": "Geo"
         },
-        "Flo": {
-          "status": "success",
-          "when": ""
+        {
+          "id": "Flo",
+          "name": "Flo"
         },
-        "Mar": {
-          "status": "success",
-          "when": ""
+        {
+          "id": "Mar",
+          "name": "Mar"
         },
-        "Sab": {
-          "status": "open",
-          "when": ""
+        {
+          "id": "Sab",
+          "name": "Sab"
         }
-      }
-    },
-    {
-      "id": "2026-05-13",
-      "date": "2026-05-13",
-      "label": "KW 20",
-      "route": "Blaue Jump-Route im Eggä bir Stägä",
-      "setBy": "Flo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
+      ],
+      "challenges": [
+        {
+          "id": "2026-05-20",
+          "date": "2026-05-20",
+          "label": "KW 21",
+          "route": "Finale Challenge, blaue? 7 queergang",
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
         },
-        "Geo": {
-          "status": "fail",
-          "when": ""
+        {
+          "id": "2026-05-06",
+          "date": "2026-05-06",
+          "label": "KW 19",
+          "route": "Pinke 7 links vom Überhang",
+          "setBy": "Mar",
+          "removedFrom": null,
+          "notes": "Boss ehrenhaft erst beim vierten Versuch erfolgreich",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": "makeup"
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
         },
-        "Flo": {
-          "status": "success",
-          "when": ""
+        {
+          "id": "2026-05-13",
+          "date": "2026-05-13",
+          "label": "KW 20",
+          "route": "Blaue Jump-Route im Eggä bir Stägä",
+          "setBy": "Flo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": "makeup"
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
         },
-        "Mar": {
-          "status": "fail",
-          "when": "makeup"
+        {
+          "id": "2026-04-29",
+          "date": "2026-04-29",
+          "label": "KW 18",
+          "route": "Rote 6 neue Halle",
+          "setBy": "Sab",
+          "removedFrom": null,
+          "notes": "Challenge vor Sabrinas Unfall 😢",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": "makeup"
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "success",
+              "when": ""
+            }
+          }
         },
-        "Sab": {
-          "status": "open",
-          "when": ""
+        {
+          "id": "2026-04-15",
+          "date": "2026-04-15",
+          "label": "KW 16",
+          "route": "Grüne 8 hinten am Würfel in der alten Halle",
+          "setBy": "Dan",
+          "removedFrom": null,
+          "notes": "Am Schluss kleingriffig",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": "makeup"
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-04-22",
+          "date": "2026-04-22",
+          "label": "KW 17",
+          "route": "Blaue 6 in der hinteren neueren Halle rechts an der Wand",
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "Man muss den Bauch einziehen :D",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": "makeup"
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-04-01",
+          "date": "2026-04-01",
+          "label": "KW 14",
+          "route": "Schwarze 6 - Wand, wo Boss jewils uf falsche Farbe pöiseled :D",
+          "setBy": "Sab",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "success",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-03-25",
+          "date": "2026-03-25",
+          "label": "KW 13",
+          "route": "Violette 8 - Queergang gleich am Anfang der neuen Halle (mega schwierig!)",
+          "setBy": "Flo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-03-18",
+          "date": "2026-03-18",
+          "label": "KW 12",
+          "route": "Rote 7 neue Halle",
+          "setBy": "Mar",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-03-11",
+          "date": "2026-03-11",
+          "label": "KW 11",
+          "route": "Orange 8 queergang links nähr uehi, fingrig",
+          "setBy": "Dan",
+          "removedFrom": "2026-03-15",
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "open",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-03-04",
+          "date": "2026-03-04",
+          "label": "KW 10",
+          "route": "Weisse 8 - Grifflöcher verboten!!",
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-02-04",
+          "date": "2026-02-04",
+          "label": "KW 06",
+          "route": "Gelbe 7 kleine Griffe neue Halle",
+          "setBy": "Dan",
+          "removedFrom": "2026-02-17",
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": "makeup"
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-02-11",
+          "date": "2026-02-11",
+          "label": "KW 07",
+          "route": "Schwarze 8 - jump nach rechts neue Halle",
+          "setBy": "Flo",
+          "removedFrom": "2026-02-17",
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-02-18",
+          "date": "2026-02-18",
+          "label": "KW 08",
+          "route": "Grüne 5 mit Bimano-Open Kleber --> 6",
+          "setBy": "Sab",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": "makeup"
+            },
+            "Flo": {
+              "status": "success",
+              "when": "makeup"
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-02-25",
+          "date": "2026-02-25",
+          "label": "KW 09",
+          "route": "Blaue 7 - Queergangtanz neue Halle",
+          "setBy": "Mar",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-01-28",
+          "date": "2026-01-28",
+          "label": "KW 05",
+          "route": "Blaue 9 - Quergang im neuen Bereich rechts",
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-01-21",
+          "date": "2026-01-21",
+          "label": "KW 04",
+          "route": "Gelbe 5 mit schwierigem Start",
+          "setBy": "Sab",
+          "removedFrom": "2026-01-23",
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "open",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "success",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-01-14",
+          "date": "2026-01-14",
+          "label": "KW 03",
+          "route": "Gelbe 8 im Eggä bim Iigang",
+          "setBy": "Mar",
+          "removedFrom": "2026-01-23",
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "open",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-12-17",
+          "date": "2025-12-17",
+          "label": "KW 51",
+          "route": "Graue 8 im Überhang",
+          "setBy": "Dan",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-01-07",
+          "date": "2026-01-07",
+          "label": "KW 02",
+          "route": "Gelbe 8 neuer Bereich",
+          "setBy": "Flo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-12-10",
+          "date": "2025-12-10",
+          "label": "KW 50",
+          "route": "Gelbe 7 im Eggä bim Iigang",
+          "setBy": "Mar",
+          "removedFrom": "2026-01-06",
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-12-03",
+          "date": "2025-12-03",
+          "label": "KW 49",
+          "route": "7 weiss - Würfel neuer Bereich",
+          "setBy": "Flo",
+          "removedFrom": null,
+          "notes": "Dan nachgeholt",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-11-12",
+          "date": "2025-11-12",
+          "label": "KW 46",
+          "route": "Queerung nach rechts (neuer Bereich)",
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-11-05",
+          "date": "2025-11-05",
+          "label": "KW 45",
+          "route": "Gelbe 8 (Kleingriffig)",
+          "setBy": "Dan",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-10-28",
+          "date": "2025-10-28",
+          "label": "KW 44",
+          "route": "6 - Rot! Queerung nach Rechts, Schluss schwierig",
+          "setBy": "Sab",
+          "removedFrom": null,
+          "notes": "Gelbe Tritte verboten..",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "success",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-10-21",
+          "date": "2025-10-21",
+          "label": "KW 43",
+          "route": "Irgendöpis",
+          "setBy": "Mar",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            },
+            "Sab": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2025-10-14",
+          "date": "2025-10-14",
+          "label": "Nr 3",
+          "route": "Weiss 8 - Jump-Start nicht machbar",
+          "setBy": "Flo",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Geo": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Flo": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Mar": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Sab": {
+              "status": "fail",
+              "when": "live"
+            }
+          }
+        },
+        {
+          "id": "2025-09-16",
+          "date": "2025-09-16",
+          "label": "Nr. 1",
+          "route": "...",
+          "setBy": "Dan",
+          "removedFrom": null,
+          "notes": "...",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": "live"
+            },
+            "Geo": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Flo": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Mar": {
+              "status": "success",
+              "when": "live"
+            },
+            "Sab": {
+              "status": "fail",
+              "when": "live"
+            }
+          }
+        },
+        {
+          "id": "2025-09-24",
+          "date": "2025-09-24",
+          "label": "Nr. 2",
+          "route": "...",
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "...",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": "live"
+            },
+            "Geo": {
+              "status": "success",
+              "when": "live"
+            },
+            "Flo": {
+              "status": "success",
+              "when": "live"
+            },
+            "Mar": {
+              "status": "success",
+              "when": "live"
+            },
+            "Sab": {
+              "status": "fail",
+              "when": "live"
+            }
+          }
         }
-      }
-    },
-    {
-      "id": "2026-04-29",
-      "date": "2026-04-29",
-      "label": "KW 18",
-      "route": "Rote 6 neue Halle",
-      "setBy": "Sab",
-      "removedFrom": null,
-      "notes": "Challenge vor Sabrinas Unfall 😢",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": "makeup"
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-04-15",
-      "date": "2026-04-15",
-      "label": "KW 16",
-      "route": "Grüne 8 hinten am Würfel in der alten Halle",
-      "setBy": "Dan",
-      "removedFrom": null,
-      "notes": "Am Schluss kleingriffig",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": "makeup"
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-04-22",
-      "date": "2026-04-22",
-      "label": "KW 17",
-      "route": "Blaue 6 in der hinteren neueren Halle rechts an der Wand",
-      "setBy": "Geo",
-      "removedFrom": null,
-      "notes": "Man muss den Bauch einziehen :D",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": "makeup"
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-04-01",
-      "date": "2026-04-01",
-      "label": "KW 14",
-      "route": "Schwarze 6 - Wand, wo Boss jewils uf falsche Farbe pöiseled :D",
-      "setBy": "Sab",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-03-25",
-      "date": "2026-03-25",
-      "label": "KW 13",
-      "route": "Violette 8 - Queergang gleich am Anfang der neuen Halle (mega schwierig!)",
-      "setBy": "Flo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-03-18",
-      "date": "2026-03-18",
-      "label": "KW 12",
-      "route": "Rote 7 neue Halle",
-      "setBy": "Mar",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-03-11",
-      "date": "2026-03-11",
-      "label": "KW 11",
-      "route": "Orange 8 queergang links nähr uehi, fingrig",
-      "setBy": "Dan",
-      "removedFrom": "2026-03-15",
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "open",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-03-04",
-      "date": "2026-03-04",
-      "label": "KW 10",
-      "route": "Weisse 8 - Grifflöcher verboten!!",
-      "setBy": "Geo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-02-04",
-      "date": "2026-02-04",
-      "label": "KW 06",
-      "route": "Gelbe 7 kleine Griffe neue Halle",
-      "setBy": "Dan",
-      "removedFrom": "2026-02-17",
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": "makeup"
-        },
-        "Sab": {
-          "status": "open",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-02-11",
-      "date": "2026-02-11",
-      "label": "KW 07",
-      "route": "Schwarze 8 - jump nach rechts neue Halle",
-      "setBy": "Flo",
-      "removedFrom": "2026-02-17",
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "open",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-02-18",
-      "date": "2026-02-18",
-      "label": "KW 08",
-      "route": "Grüne 5 mit Bimano-Open Kleber --> 6",
-      "setBy": "Sab",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": "makeup"
-        },
-        "Flo": {
-          "status": "success",
-          "when": "makeup"
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-02-25",
-      "date": "2026-02-25",
-      "label": "KW 09",
-      "route": "Blaue 7 - Queergangtanz neue Halle",
-      "setBy": "Mar",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-01-28",
-      "date": "2026-01-28",
-      "label": "KW 05",
-      "route": "Blaue 9 - Quergang im neuen Bereich rechts",
-      "setBy": "Geo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-01-21",
-      "date": "2026-01-21",
-      "label": "KW 04",
-      "route": "Gelbe 5 mit schwierigem Start",
-      "setBy": "Sab",
-      "removedFrom": "2026-01-23",
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "open",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-01-14",
-      "date": "2026-01-14",
-      "label": "KW 03",
-      "route": "Gelbe 8 im Eggä bim Iigang",
-      "setBy": "Mar",
-      "removedFrom": "2026-01-23",
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "open",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "open",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-12-17",
-      "date": "2025-12-17",
-      "label": "KW 51",
-      "route": "Graue 8 im Überhang",
-      "setBy": "Dan",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2026-01-07",
-      "date": "2026-01-07",
-      "label": "KW 02",
-      "route": "Gelbe 8 neuer Bereich",
-      "setBy": "Flo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-12-10",
-      "date": "2025-12-10",
-      "label": "KW 50",
-      "route": "Gelbe 7 im Eggä bim Iigang",
-      "setBy": "Mar",
-      "removedFrom": "2026-01-06",
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "open",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-12-03",
-      "date": "2025-12-03",
-      "label": "KW 49",
-      "route": "7 weiss - Würfel neuer Bereich",
-      "setBy": "Flo",
-      "removedFrom": null,
-      "notes": "Dan nachgeholt",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "fail",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-11-12",
-      "date": "2025-11-12",
-      "label": "KW 46",
-      "route": "Queerung nach rechts (neuer Bereich)",
-      "setBy": "Geo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-11-05",
-      "date": "2025-11-05",
-      "label": "KW 45",
-      "route": "Gelbe 8 (Kleingriffig)",
-      "setBy": "Dan",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-10-28",
-      "date": "2025-10-28",
-      "label": "KW 44",
-      "route": "6 - Rot! Queerung nach Rechts, Schluss schwierig",
-      "setBy": "Sab",
-      "removedFrom": null,
-      "notes": "Gelbe Tritte verboten..",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": ""
-        },
-        "Geo": {
-          "status": "success",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "success",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-10-21",
-      "date": "2025-10-21",
-      "label": "KW 43",
-      "route": "Irgendöpis",
-      "setBy": "Mar",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": ""
-        },
-        "Geo": {
-          "status": "fail",
-          "when": ""
-        },
-        "Flo": {
-          "status": "success",
-          "when": ""
-        },
-        "Mar": {
-          "status": "success",
-          "when": ""
-        },
-        "Sab": {
-          "status": "fail",
-          "when": ""
-        }
-      }
-    },
-    {
-      "id": "2025-10-14",
-      "date": "2025-10-14",
-      "label": "Nr 3",
-      "route": "Weiss 8 - Jump-Start nicht machbar",
-      "setBy": "Flo",
-      "removedFrom": null,
-      "notes": "",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Geo": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Flo": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Mar": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Sab": {
-          "status": "fail",
-          "when": "live"
-        }
-      }
-    },
-    {
-      "id": "2025-09-16",
-      "date": "2025-09-16",
-      "label": "Nr. 1",
-      "route": "...",
-      "setBy": "Dan",
-      "removedFrom": null,
-      "notes": "...",
-      "results": {
-        "Dan": {
-          "status": "success",
-          "when": "live"
-        },
-        "Geo": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Flo": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Mar": {
-          "status": "success",
-          "when": "live"
-        },
-        "Sab": {
-          "status": "fail",
-          "when": "live"
-        }
-      }
-    },
-    {
-      "id": "2025-09-24",
-      "date": "2025-09-24",
-      "label": "Nr. 2",
-      "route": "...",
-      "setBy": "Geo",
-      "removedFrom": null,
-      "notes": "...",
-      "results": {
-        "Dan": {
-          "status": "fail",
-          "when": "live"
-        },
-        "Geo": {
-          "status": "success",
-          "when": "live"
-        },
-        "Flo": {
-          "status": "success",
-          "when": "live"
-        },
-        "Mar": {
-          "status": "success",
-          "when": "live"
-        },
-        "Sab": {
-          "status": "fail",
-          "when": "live"
-        }
-      }
+      ]
     }
   ]
 }
