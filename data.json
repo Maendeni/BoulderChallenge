@@ -27,7 +27,68 @@
           "name": "Mar"
         }
       ],
-      "challenges": []
+      "challenges": [
+        {
+          "id": "2026-09-02",
+          "date": "2026-09-02",
+          "label": "KW 36",
+          "route": "Pinke Route im alten Bereich mit kantigen Griffen und sehr gfürchigem Schluss.. ;-)",
+          "grade": 8,
+          "setBy": "Dan",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-08-24",
+          "date": "2026-08-24",
+          "label": "KW 35",
+          "route": "Scharz neue Halle hinten (schwierig zu haltender Sloper). Schlechter Start für Challenge Setzer..",
+          "grade": 7,
+          "setBy": "Mar",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": "makeup"
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            },
+            "Sab": {
+              "status": "open",
+              "when": ""
+            }
+          }
+        }
+      ]
     },
     {
       "id": "2025-26",
