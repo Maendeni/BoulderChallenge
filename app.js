@@ -491,6 +491,7 @@ function startEditChallenge(chId) {
       date: ch.date || "",
       label: ch.label || "",
       route: ch.route || "",
+      grade: ch.grade == null ? "" : String(ch.grade),
       setBy: ch.setBy || (participants[0]?.id ?? ""),
       removedFrom: ch.removedFrom || "",
       notes: ch.notes || "",
@@ -798,6 +799,12 @@ function computeAndRenderAll(doc) {
 
 /* ---------------- Challenges (Karten) ---------------- */
 
+// Schwierigkeitsgrad (hallen-eigene Skala 4–9); ohne Angabe wird nichts gezeigt
+function renderGrade(grade) {
+  if (grade == null || grade === "") return "";
+  return `<span class="chGrade" title="Schwierigkeitsgrad ${safeText(grade)} (Hallenskala)">${safeText(grade)}</span> `;
+}
+
 function renderChallenges(challenges, participants, pidToName, pidToColor, now, readOnly = false) {
   const el = document.getElementById("challenges");
 
@@ -886,7 +893,7 @@ function renderChallenges(challenges, participants, pidToName, pidToColor, now, 
           <div class="challengeKw">${kwLabel}</div>
           <div class="challengeSummaryBody">
             <div class="challengeTitle">${safeText(ch.route ?? "—")}</div>
-            <div class="challengeMeta">von <span class="setterName">${safeText(setByName)}</span> · ${dateFmt}</div>
+            <div class="challengeMeta">${renderGrade(ch.grade)}von <span class="setterName">${safeText(setByName)}</span> · ${dateFmt}</div>
           </div>
           <div class="chMiniDots" aria-hidden="true">${miniDots}</div>
           <span class="chChevron" aria-hidden="true">▾</span>
@@ -916,14 +923,14 @@ function emptyDraft(participants) {
   const week = getIsoWeek(date);
   const label = week ? `KW ${String(week).padStart(2, "0")}` : "";
   return {
-    date, label, route: "",
+    date, label, route: "", grade: "",
     setBy: participants[0]?.id ?? "",
     removedFrom: "", notes: "",
     results: Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]))
   };
 }
 
-const ADMIN_FIELD_IDS = ["admDate", "admLabel", "admRoute", "admSetBy", "admRemovedFrom", "admNotes", "admAdd"];
+const ADMIN_FIELD_IDS = ["admDate", "admLabel", "admRoute", "admGrade", "admSetBy", "admRemovedFrom", "admNotes", "admAdd"];
 
 function renderAdmin(doc, season, participants) {
   const archived = !!season?.archived;
@@ -959,6 +966,7 @@ function wireAdminHandlers() {
   const elDate = document.getElementById("admDate");
   const elLabel = document.getElementById("admLabel");
   const elRoute = document.getElementById("admRoute");
+  const elGrade = document.getElementById("admGrade");
   const elSetBy = document.getElementById("admSetBy");
   const elRemoved = document.getElementById("admRemovedFrom");
   const elNotes = document.getElementById("admNotes");
@@ -974,7 +982,7 @@ function wireAdminHandlers() {
     updateAdminPreview(window.__DATA__);
   };
 
-  [elDate, elLabel, elRoute, elSetBy, elRemoved, elNotes].forEach(el => {
+  [elDate, elLabel, elRoute, elGrade, elSetBy, elRemoved, elNotes].forEach(el => {
     if (!el) return;
     el.addEventListener("input", syncDraft);
     el.addEventListener("change", syncDraft);
@@ -1015,6 +1023,7 @@ function wireAdminHandlers() {
         date: draft.date,
         label: draft.label || "",
         route: draft.route,
+        grade: draft.grade === "" || draft.grade == null ? null : Number(draft.grade),
         setBy: draft.setBy,
         removedFrom: draft.removedFrom || null,
         notes: draft.notes || "",
@@ -1041,6 +1050,7 @@ function wireAdminHandlers() {
         date: draft.date,
         label: nextLabel,
         route: "",
+        grade: "",
         setBy: draft.setBy,
         removedFrom: "",
         notes: "",
@@ -1084,6 +1094,7 @@ function applyDraftToUi(draft, participants, disabled = false) {
   document.getElementById("admDate").value = draft.date || "";
   document.getElementById("admLabel").value = draft.label || "";
   document.getElementById("admRoute").value = draft.route || "";
+  document.getElementById("admGrade").value = draft.grade ?? "";
   document.getElementById("admSetBy").value = draft.setBy || (participants[0]?.id ?? "");
   document.getElementById("admRemovedFrom").value = draft.removedFrom || "";
   document.getElementById("admNotes").value = draft.notes || "";
@@ -1120,13 +1131,14 @@ function readDraftFromUi(participants) {
   const date = document.getElementById("admDate").value;
   const label = document.getElementById("admLabel").value.trim();
   const route = document.getElementById("admRoute").value.trim();
+  const grade = document.getElementById("admGrade").value;
   const setBy = document.getElementById("admSetBy").value;
   const removedFrom = document.getElementById("admRemovedFrom").value;
   const notes = document.getElementById("admNotes").value.trim();
 
   const saved = loadDraft(participants);
   const results = saved?.results ?? Object.fromEntries(participants.map(p => [p.id, { status: "open", when: "" }]));
-  return { date, label, route, setBy, removedFrom, notes, results };
+  return { date, label, route, grade, setBy, removedFrom, notes, results };
 }
 
 function updateAdminPreview(data) {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0f17" />
   <title>Boulder-Challenge</title>
-  <link rel="stylesheet" href="styles.css?v=20260901" />
+  <link rel="stylesheet" href="styles.css?v=20260905" />
 </head>
 <body>
   <header class="container header">
@@ -55,6 +55,19 @@
         </label>
 
         <label class="field">
+          <span>Schwierigkeit</span>
+          <select id="admGrade">
+            <option value="">– keine Angabe</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </label>
+
+        <label class="field">
           <span>Definiert von</span>
           <select id="admSetBy"></select>
         </label>
@@ -100,6 +113,6 @@
     <button id="toastUndo" type="button">Rückgängig</button>
   </div>
 
-  <script src="app.js?v=20260901" defer></script>
+  <script src="app.js?v=20260905" defer></script>
 </body>
 </html>
