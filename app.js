@@ -764,6 +764,86 @@ function addTrendInfo(rows, challengesAsc, participants, now) {
   return rows;
 }
 
+/* ---------------- Auswertung: Grad-Profil + Saisonvergleich ---------------- */
+
+// Erfolge/Versuche einer Person über eine Menge von Challenges.
+// Gleiche Regel wie in der Rangliste: offen und "nicht möglich" zählen nicht.
+function bilanz(challenges, pid) {
+  let s = 0, a = 0;
+  for (const ch of challenges) {
+    const status = ((ch.results ?? {})[pid] ?? {}).status ?? "open";
+    if (status === "success") { s += 1; a += 1; }
+    else if (status === "fail") { a += 1; }
+  }
+  // rateRoh bleibt ungerundet, damit Differenzen nicht zweimal gerundet werden
+  const rateRoh = a > 0 ? (s / a) * 100 : null;
+  return { erfolge: s, versuche: a, rateRoh, rate: rateRoh === null ? null : Math.round(rateRoh) };
+}
+
+// Erfolgsquote je Schwierigkeitsgrad, nur für tatsächlich vorkommende Grade
+function gradProfil(season) {
+  const mitGrad = (season?.challenges ?? []).filter(c => c.grade != null);
+  const grade = [...new Set(mitGrad.map(c => Number(c.grade)))].sort((a, b) => a - b);
+
+  return {
+    grade,
+    ohneGrad: (season?.challenges ?? []).length - mitGrad.length,
+    zeilen: (season?.participants ?? []).map(p => ({
+      id: p.id,
+      name: p.name,
+      zellen: grade.map(g => bilanz(mitGrad.filter(c => Number(c.grade) === g), p.id))
+    }))
+  };
+}
+
+// Die Saison davor (nach Startdatum), für den Vergleich
+function vorherigeSaison(doc, season) {
+  if (!season) return null;
+  const aelter = (doc?.seasons ?? [])
+    .filter(s => s.id !== season.id && String(s.start ?? "") < String(season.start ?? ""))
+    .sort((a, b) => String(b.start ?? "").localeCompare(String(a.start ?? "")));
+  return aelter[0] ?? null;
+}
+
+// Gleicher Zeitpunkt = gleiche Anzahl Challenges, nicht gleiches Datum.
+// Sonst vergleicht man drei Wochen Saison mit einer ganzen Vorsaison.
+function saisonVergleich(doc, season) {
+  const vorher = vorherigeSaison(doc, season);
+  const jetztAlle = [...(season?.challenges ?? [])].sort(byOldestFirst);
+  if (!vorher || !jetztAlle.length) return null;
+
+  const vorherAlle = [...(vorher.challenges ?? [])].sort(byOldestFirst);
+  if (!vorherAlle.length) return null;
+
+  // Falls die Vorsaison kürzer war, auf deren Länge begrenzen
+  const n = Math.min(jetztAlle.length, vorherAlle.length);
+  const jetzt = jetztAlle.slice(0, n);
+  const damals = vorherAlle.slice(0, n);
+
+  const zeilen = (season?.participants ?? []).map(p => {
+    const warDabei = (vorher.participants ?? []).some(x => x.id === p.id);
+    const a = bilanz(jetzt, p.id);
+    const b = warDabei ? bilanz(damals, p.id) : null;
+    return {
+      id: p.id,
+      name: p.name,
+      jetzt: a,
+      damals: b,
+      punkteDelta: b ? a.erfolge - b.erfolge : null,
+      rateDelta: (b && a.rateRoh !== null && b.rateRoh !== null)
+        ? Math.round(a.rateRoh - b.rateRoh)
+        : null
+    };
+  });
+
+  return {
+    anzahl: n,
+    gekuerzt: jetztAlle.length > n,
+    vorsaison: vorher.shortName ?? vorher.name,
+    zeilen
+  };
+}
+
 /* ---------------- Gesamtrender ---------------- */
 
 function computeAndRenderAll(doc) {
@@ -795,8 +875,146 @@ function computeAndRenderAll(doc) {
   renderSeasonSwitcher(doc, season);
   renderSeasonHeader(season, allChallenges, leaderboard, now);
   renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, pidToColor, now);
+  renderAnalysis(doc, season, pidToColor);
   renderChallenges(challengesDesc, participants, pidToName, pidToColor, now, readOnly);
   renderAdmin(doc, season, participants);
+}
+
+/* ---------------- Auswertung rendern ---------------- */
+
+function renderDelta(wert, einheit = "") {
+  if (wert === null || wert === undefined) return `<span class="avDelta avDeltaEmpty">·</span>`;
+  if (wert > 0) return `<span class="avDelta avDeltaUp">▲${wert}${einheit}</span>`;
+  if (wert < 0) return `<span class="avDelta avDeltaDown">▼${-wert}${einheit}</span>`;
+  return `<span class="avDelta avDeltaSame">±0</span>`;
+}
+
+function renderGradProfil(profil, pidToColor) {
+  if (!profil.grade.length) {
+    return `<p class="muted">Für diese Saison sind noch keine Schwierigkeitsgrade erfasst.</p>`;
+  }
+
+  const kopf = profil.grade.map(g => `<div class="gpHead">${g}</div>`).join("");
+
+  const zeilen = profil.zeilen.map(z => {
+    const farbe = pidToColor[z.id] ?? "#38bdf8";
+    const zellen = z.zellen.map((b, i) => {
+      if (!b.versuche) {
+        return `<div class="gpCell gpCellLeer" title="Grad ${profil.grade[i]}: kein Versuch">–</div>`;
+      }
+      const titel = `Grad ${profil.grade[i]}: ${b.erfolge} von ${b.versuche} · ${b.rate} %`;
+      return `
+        <div class="gpCell" title="${safeText(titel)}">
+          <span class="gpFill" style="width:${b.rate}%"></span>
+          <span class="gpTxt">${b.erfolge}/${b.versuche}</span>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="gpRow" style="--pColor:${farbe}">
+        <div class="gpName">${safeText(z.name)}</div>
+        ${zellen}
+      </div>`;
+  }).join("");
+
+  const hinweis = profil.ohneGrad
+    ? `<p class="muted avHint">${profil.ohneGrad} ${plural(profil.ohneGrad, "Challenge ohne", "Challenges ohne")} Gradangabe ${plural(profil.ohneGrad, "ist", "sind")} hier nicht enthalten.</p>`
+    : "";
+
+  return `
+    <div class="gpTable">
+      <div class="gpRow gpHeadRow">
+        <div class="gpName">Grad</div>
+        ${kopf}
+      </div>
+      ${zeilen}
+    </div>
+    ${hinweis}`;
+}
+
+function renderSaisonVergleich(v, pidToColor) {
+  const zeilen = v.zeilen.map(z => {
+    const farbe = pidToColor[z.id] ?? "#38bdf8";
+    const rate = z.jetzt.rate === null ? "–" : `${z.jetzt.rate} %`;
+    const rateDamals = (z.damals && z.damals.rate !== null) ? `${z.damals.rate} %` : "–";
+    const punkteDamals = z.damals ? `${z.damals.erfolge}` : "–";
+
+    return `
+      <div class="svRow" style="--pColor:${farbe}">
+        <div class="svName">${safeText(z.name)}</div>
+        <div class="svWert">
+          <span class="svJetzt">${z.jetzt.erfolge} P</span>
+          ${renderDelta(z.punkteDelta)}
+          <span class="svDamals">(${punkteDamals})</span>
+        </div>
+        <div class="svWert">
+          <span class="svJetzt">${rate}</span>
+          ${renderDelta(z.rateDelta)}
+          <span class="svDamals">(${rateDamals})</span>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Bei wenigen Challenges schwanken Prozentwerte stark – das gehört dazugesagt
+  const stichprobe = v.anzahl < 5
+    ? `<p class="muted avHint">Erst ${v.anzahl} ${plural(v.anzahl, "Challenge", "Challenges")}: Die Prozentwerte springen noch stark, ein einzelner Versuch verschiebt sie deutlich.</p>`
+    : "";
+  const gekuerzt = v.gekuerzt
+    ? `<p class="muted avHint">Die Saison ${safeText(v.vorsaison)} hatte insgesamt nur ${v.anzahl} Challenges – verglichen wird bis dahin.</p>`
+    : "";
+
+  return `
+    <p class="avLead">Stand nach ${v.anzahl} ${plural(v.anzahl, "Challenge", "Challenges")} – daneben die Saison ${safeText(v.vorsaison)} zum selben Zeitpunkt.</p>
+    <div class="svTable">
+      <div class="svRow svHeadRow">
+        <div class="svName">Wer</div>
+        <div class="svWert">Punkte</div>
+        <div class="svWert">Erfolgsrate</div>
+      </div>
+      ${zeilen}
+    </div>
+    ${stichprobe}${gekuerzt}`;
+}
+
+function renderAnalysis(doc, season, pidToColor) {
+  const el = document.getElementById("analysis");
+  if (!el) return;
+
+  const hatChallenges = (season?.challenges ?? []).length > 0;
+  if (!hatChallenges) { el.innerHTML = ""; return; }
+
+  const profil = gradProfil(season);
+  const vergleich = saisonVergleich(doc, season);
+
+  const bloecke = [
+    `<div class="avBlock">
+       <div class="avTitle">Grad-Profil</div>
+       ${renderGradProfil(profil, pidToColor)}
+     </div>`,
+    vergleich
+      ? `<div class="avBlock">
+           <div class="avTitle">Vergleich mit ${safeText(vergleich.vorsaison)}</div>
+           ${renderSaisonVergleich(vergleich, pidToColor)}
+         </div>`
+      : ""
+  ].join("");
+
+  el.innerHTML = `
+    <div style="margin-top:10px;">
+      <button class="matrixToggle" id="analysisToggleBtn" type="button" aria-expanded="false" aria-controls="analysisWrap">
+        <span>Auswertung</span>
+        <span class="mtArrow">▾</span>
+      </button>
+    </div>
+    <div class="matrixWrap" id="analysisWrap" hidden>${bloecke}</div>`;
+
+  const btn = document.getElementById("analysisToggleBtn");
+  const wrap = document.getElementById("analysisWrap");
+  btn.addEventListener("click", () => {
+    const isOpen = !wrap.hidden;
+    wrap.hidden = isOpen;
+    btn.setAttribute("aria-expanded", String(!isOpen));
+  });
 }
 
 /* ---------------- Challenges (Karten) ---------------- */

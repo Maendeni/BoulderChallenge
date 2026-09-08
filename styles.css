@@ -382,6 +382,141 @@ code{
   white-space: nowrap;
 }
 
+/* ---- Auswertung: Grad-Profil + Saisonvergleich ---- */
+
+.avBlock{ margin-bottom: 18px; }
+.avBlock:last-child{ margin-bottom: 0; }
+
+.avTitle{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.avLead{
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+.avHint{ margin-top: 8px; line-height: 1.4; }
+
+.avDelta{ font-size: 10px; font-weight: 700; }
+.avDeltaUp{ color: var(--success); }
+.avDeltaDown{ color: var(--fail); }
+.avDeltaSame{ color: var(--muted); }
+.avDeltaEmpty{ color: var(--line); }
+
+/* Grad-Profil */
+.gpTable{ display: flex; flex-direction: column; gap: 4px; }
+
+.gpRow{
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+.gpName{
+  flex: 0 0 52px;
+  width: 52px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pColor, var(--muted));
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpHeadRow .gpName{ color: var(--muted); font-weight: 600; font-size: 11px; }
+.gpHead{
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 96px;   /* bei wenigen Graden nicht auseinanderziehen */
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-bottom: 2px;
+}
+
+.gpCell{
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 96px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gpFill{
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: color-mix(in srgb, var(--pColor, var(--accent)) 28%, transparent);
+}
+.gpTxt{
+  position: relative;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+.gpCellLeer{ color: var(--line); font-size: 11px; }
+
+/* Saisonvergleich */
+.svTable{ display: flex; flex-direction: column; gap: 4px; }
+
+.svRow{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+}
+.svHeadRow{
+  border-color: transparent;
+  background: none;
+  padding-top: 0;
+  padding-bottom: 2px;
+}
+.svHeadRow .svName,
+.svHeadRow .svWert{ color: var(--muted); font-size: 11px; font-weight: 600; }
+
+.svName{
+  flex: 0 0 46px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--pColor, var(--text));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.svWert{
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 12.5px;
+}
+.svJetzt{ font-weight: 700; color: var(--text); }
+.svDamals{ font-size: 11px; color: var(--muted); }
+
+@media (max-width: 400px){
+  .gpName{ flex-basis: 44px; width: 44px; font-size: 11px; }
+  .gpTxt{ font-size: 10px; }
+  .svName{ flex-basis: 40px; font-size: 12px; }
+  .svWert{ font-size: 12px; gap: 4px; }
+  .svDamals{ font-size: 10px; }
+}
+
 /* ---- Matrix (ausklappbar) ---- */
 .matrixToggle{
   background: none;
