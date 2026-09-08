@@ -780,19 +780,45 @@ function bilanz(challenges, pid) {
   return { erfolge: s, versuche: a, rateRoh, rate: rateRoh === null ? null : Math.round(rateRoh) };
 }
 
-// Erfolgsquote je Schwierigkeitsgrad, nur für tatsächlich vorkommende Grade
-function gradProfil(season) {
-  const mitGrad = (season?.challenges ?? []).filter(c => c.grade != null);
-  const grade = [...new Set(mitGrad.map(c => Number(c.grade)))].sort((a, b) => a - b);
+const mitGradVon = season => (season?.challenges ?? []).filter(c => c.grade != null);
+
+// Grad-Profil der laufenden Saison, je Zelle mit dem Wert der Vorsaison
+// als Messlatte. Die Vorsaison zählt dabei komplett – sie ist der
+// abgeschlossene Bestwert, an dem man sich über die Saison abarbeitet.
+function gradProfil(doc, season) {
+  const vorher = vorherigeSaison(doc, season);
+  const jetztMitGrad = mitGradVon(season);
+  const vorherMitGrad = mitGradVon(vorher);
+
+  // Grade beider Saisons, damit die Messlatte auch dort steht,
+  // wo dieses Jahr noch nichts erfasst ist
+  const grade = [...new Set([
+    ...jetztMitGrad.map(c => Number(c.grade)),
+    ...vorherMitGrad.map(c => Number(c.grade))
+  ])].sort((a, b) => a - b);
+
+  const proGrad = (challenges, g) => challenges.filter(c => Number(c.grade) === g);
 
   return {
     grade,
-    ohneGrad: (season?.challenges ?? []).length - mitGrad.length,
-    zeilen: (season?.participants ?? []).map(p => ({
-      id: p.id,
-      name: p.name,
-      zellen: grade.map(g => bilanz(mitGrad.filter(c => Number(c.grade) === g), p.id))
-    }))
+    vorsaison: vorher ? (vorher.shortName ?? vorher.name) : null,
+    ohneGrad: (season?.challenges ?? []).length - jetztMitGrad.length,
+    zeilen: (season?.participants ?? []).map(p => {
+      const warDabei = (vorher?.participants ?? []).some(x => x.id === p.id);
+      return {
+        id: p.id,
+        name: p.name,
+        zellen: grade.map(g => ({
+          grad: g,
+          jetzt: bilanz(proGrad(jetztMitGrad, g), p.id),
+          vorher: warDabei ? bilanz(proGrad(vorherMitGrad, g), p.id) : null
+        })),
+        gesamt: {
+          jetzt: bilanz(season?.challenges ?? [], p.id),
+          vorher: warDabei ? bilanz(vorher.challenges ?? [], p.id) : null
+        }
+      };
+    })
   };
 }
 
@@ -894,31 +920,66 @@ function renderGradProfil(profil, pidToColor) {
     return `<p class="muted">Für diese Saison sind noch keine Schwierigkeitsgrade erfasst.</p>`;
   }
 
-  const kopf = profil.grade.map(g => `<div class="gpHead">${g}</div>`).join("");
+  const kopf = profil.grade.map(g => `<div class="gpHead">${g}</div>`).join("")
+    + `<div class="gpHead gpHeadGesamt">Rate</div>`;
+
+  // Eine Zelle: oben der laufende Stand, darunter die Vorsaison als Messlatte
+  const zelle = (jetzt, vorher, titelPrefix, extraCls = "") => {
+    const messlatte = (vorher && vorher.versuche)
+      ? `<span class="gpVor">${vorher.erfolge}/${vorher.versuche}</span>`
+      : (profil.vorsaison ? `<span class="gpVor gpVorLeer">·</span>` : "");
+
+    if (!jetzt.versuche) {
+      return `
+        <div class="gpCell gpCellLeer ${extraCls}" title="${safeText(titelPrefix + ": noch kein Versuch")}">
+          <span class="gpTxt">–</span>${messlatte}
+        </div>`;
+    }
+
+    const titel = titelPrefix
+      + `: ${jetzt.erfolge} von ${jetzt.versuche} · ${jetzt.rate} %`
+      + ((vorher && vorher.versuche)
+          ? ` — ${profil.vorsaison}: ${vorher.erfolge} von ${vorher.versuche} · ${vorher.rate} %`
+          : "");
+
+    return `
+      <div class="gpCell ${extraCls}" title="${safeText(titel)}">
+        <span class="gpFill" style="width:${jetzt.rate}%"></span>
+        <span class="gpTxt">${jetzt.erfolge}/${jetzt.versuche}</span>${messlatte}
+      </div>`;
+  };
 
   const zeilen = profil.zeilen.map(z => {
     const farbe = pidToColor[z.id] ?? "#38bdf8";
-    const zellen = z.zellen.map((b, i) => {
-      if (!b.versuche) {
-        return `<div class="gpCell gpCellLeer" title="Grad ${profil.grade[i]}: kein Versuch">–</div>`;
-      }
-      const titel = `Grad ${profil.grade[i]}: ${b.erfolge} von ${b.versuche} · ${b.rate} %`;
-      return `
-        <div class="gpCell" title="${safeText(titel)}">
-          <span class="gpFill" style="width:${b.rate}%"></span>
-          <span class="gpTxt">${b.erfolge}/${b.versuche}</span>
-        </div>`;
-    }).join("");
+    const zellen = z.zellen.map(c => zelle(c.jetzt, c.vorher, `Grad ${c.grad}`)).join("");
+
+    // Gesamtspalte zeigt die Erfolgsrate statt Erfolge/Versuche
+    const g = z.gesamt;
+    const rate = g.jetzt.versuche ? `${g.jetzt.rate} %` : "–";
+    const rateVor = (g.vorher && g.vorher.versuche)
+      ? `${g.vorher.rate} %`
+      : (profil.vorsaison ? "·" : "");
+    const titelGesamt = `Erfolgsrate gesamt: `
+      + (g.jetzt.versuche ? `${g.jetzt.erfolge} von ${g.jetzt.versuche}` : "noch kein Versuch")
+      + ((g.vorher && g.vorher.versuche)
+          ? ` — ${profil.vorsaison}: ${g.vorher.erfolge} von ${g.vorher.versuche} · ${g.vorher.rate} %`
+          : "");
+
+    const gesamtZelle = `
+      <div class="gpCell gpCellGesamt" title="${safeText(titelGesamt)}">
+        ${g.jetzt.versuche ? `<span class="gpFill" style="width:${g.jetzt.rate}%"></span>` : ""}
+        <span class="gpTxt">${rate}</span>${rateVor ? `<span class="gpVor">${rateVor}</span>` : ""}
+      </div>`;
 
     return `
       <div class="gpRow" style="--pColor:${farbe}">
         <div class="gpName">${safeText(z.name)}</div>
-        ${zellen}
+        ${zellen}${gesamtZelle}
       </div>`;
   }).join("");
 
   const hinweis = profil.ohneGrad
-    ? `<p class="muted avHint">${profil.ohneGrad} ${plural(profil.ohneGrad, "Challenge ohne", "Challenges ohne")} Gradangabe ${plural(profil.ohneGrad, "ist", "sind")} hier nicht enthalten.</p>`
+    ? `<p class="muted avHint">${profil.ohneGrad} ${plural(profil.ohneGrad, "Challenge ohne", "Challenges ohne")} Gradangabe ${plural(profil.ohneGrad, "ist", "sind")} in den Grad-Spalten nicht enthalten.</p>`
     : "";
 
   return `
@@ -932,72 +993,46 @@ function renderGradProfil(profil, pidToColor) {
     ${hinweis}`;
 }
 
-function renderSaisonVergleich(v, pidToColor) {
-  const zeilen = v.zeilen.map(z => {
-    const farbe = pidToColor[z.id] ?? "#38bdf8";
-    const rate = z.jetzt.rate === null ? "–" : `${z.jetzt.rate} %`;
-    const rateDamals = (z.damals && z.damals.rate !== null) ? `${z.damals.rate} %` : "–";
-    const punkteDamals = z.damals ? `${z.damals.erfolge}` : "–";
-
-    return `
-      <div class="svRow" style="--pColor:${farbe}">
-        <div class="svName">${safeText(z.name)}</div>
-        <div class="svWert">
-          <span class="svJetzt">${z.jetzt.erfolge} P</span>
-          ${renderDelta(z.punkteDelta)}
-          <span class="svDamals">(${punkteDamals})</span>
-        </div>
-        <div class="svWert">
-          <span class="svJetzt">${rate}</span>
-          ${renderDelta(z.rateDelta)}
-          <span class="svDamals">(${rateDamals})</span>
-        </div>
-      </div>`;
+// Punktestand zum selben Zeitpunkt der Vorsaison, als eine Zeile.
+// Punkte lassen sich nur bei gleicher Challenge-Zahl fair vergleichen –
+// deshalb steht das hier und nicht in der Gesamtspalte der Tabelle.
+function renderPunkteZeile(v) {
+  const teile = v.zeilen.map(z => {
+    const damals = z.damals ? `${z.damals.erfolge}` : "–";
+    return `<span class="pvItem"><span class="pvName">${safeText(z.name)}</span>`
+         + `<span class="pvJetzt">${z.jetzt.erfolge}</span>`
+         + `${renderDelta(z.punkteDelta)}`
+         + `<span class="pvDamals">(${damals})</span></span>`;
   }).join("");
 
-  // Bei wenigen Challenges schwanken Prozentwerte stark – das gehört dazugesagt
-  const stichprobe = v.anzahl < 5
-    ? `<p class="muted avHint">Erst ${v.anzahl} ${plural(v.anzahl, "Challenge", "Challenges")}: Die Prozentwerte springen noch stark, ein einzelner Versuch verschiebt sie deutlich.</p>`
-    : "";
   const gekuerzt = v.gekuerzt
-    ? `<p class="muted avHint">Die Saison ${safeText(v.vorsaison)} hatte insgesamt nur ${v.anzahl} Challenges – verglichen wird bis dahin.</p>`
+    ? ` Die Saison ${safeText(v.vorsaison)} hatte insgesamt nur ${v.anzahl} Challenges.`
     : "";
 
   return `
-    <p class="avLead">Stand nach ${v.anzahl} ${plural(v.anzahl, "Challenge", "Challenges")} – daneben die Saison ${safeText(v.vorsaison)} zum selben Zeitpunkt.</p>
-    <div class="svTable">
-      <div class="svRow svHeadRow">
-        <div class="svName">Wer</div>
-        <div class="svWert">Punkte</div>
-        <div class="svWert">Erfolgsrate</div>
-      </div>
-      ${zeilen}
-    </div>
-    ${stichprobe}${gekuerzt}`;
+    <div class="pvBlock">
+      <div class="pvLead">Punkte nach ${v.anzahl} ${plural(v.anzahl, "Challenge", "Challenges")} – in Klammern der Stand von ${safeText(v.vorsaison)} zum selben Zeitpunkt.${gekuerzt}</div>
+      <div class="pvRow">${teile}</div>
+    </div>`;
 }
 
 function renderAnalysis(doc, season, pidToColor) {
   const el = document.getElementById("analysis");
   if (!el) return;
 
-  const hatChallenges = (season?.challenges ?? []).length > 0;
-  if (!hatChallenges) { el.innerHTML = ""; return; }
+  if (!(season?.challenges ?? []).length) { el.innerHTML = ""; return; }
 
-  const profil = gradProfil(season);
+  const profil = gradProfil(doc, season);
   const vergleich = saisonVergleich(doc, season);
 
-  const bloecke = [
-    `<div class="avBlock">
-       <div class="avTitle">Grad-Profil</div>
-       ${renderGradProfil(profil, pidToColor)}
-     </div>`,
-    vergleich
-      ? `<div class="avBlock">
-           <div class="avTitle">Vergleich mit ${safeText(vergleich.vorsaison)}</div>
-           ${renderSaisonVergleich(vergleich, pidToColor)}
-         </div>`
-      : ""
-  ].join("");
+  const einleitung = profil.vorsaison
+    ? `<p class="avLead">Oben der Stand dieser Saison, darunter blass die Saison ${safeText(profil.vorsaison)} als Messlatte.</p>`
+    : "";
+
+  // Bei wenigen Challenges schwanken Prozentwerte stark – das gehört dazugesagt
+  const stichprobe = (vergleich && vergleich.anzahl < 5)
+    ? `<p class="muted avHint">Erst ${vergleich.anzahl} ${plural(vergleich.anzahl, "Challenge", "Challenges")}: Die Prozentwerte springen noch stark, ein einzelner Versuch verschiebt sie deutlich.</p>`
+    : "";
 
   el.innerHTML = `
     <div style="margin-top:10px;">
@@ -1006,7 +1041,15 @@ function renderAnalysis(doc, season, pidToColor) {
         <span class="mtArrow">▾</span>
       </button>
     </div>
-    <div class="matrixWrap" id="analysisWrap" hidden>${bloecke}</div>`;
+    <div class="matrixWrap" id="analysisWrap" hidden>
+      <div class="avBlock">
+        <div class="avTitle">Grad-Profil</div>
+        ${einleitung}
+        ${renderGradProfil(profil, pidToColor)}
+        ${vergleich ? renderPunkteZeile(vergleich) : ""}
+        ${stichprobe}
+      </div>
+    </div>`;
 
   const btn = document.getElementById("analysisToggleBtn");
   const wrap = document.getElementById("analysisWrap");
