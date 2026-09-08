@@ -621,7 +621,28 @@ function hideToast() {
 
 /* ---------------- Saison-Fortschritt + Stats ---------------- */
 
-function renderSeasonHeader(season, allChallenges, leaderboardRows, now) {
+// Erfolgsrate einer ganzen Saison über alle Teilnehmer:
+// erfolgreiche / abgeschlossene Versuche, offen und "nicht möglich" zählen nicht.
+// Zählt nur Einträge der erfassten Teilnehmer, damit Altlasten im JSON
+// (z.B. Ergebnisse von jemandem, der die Saison nicht mitgeht) nichts verfälschen.
+function saisonErfolgsrate(season) {
+  const ids = (season?.participants ?? []).map(p => p.id);
+  let erfolge = 0, versuche = 0;
+
+  for (const ch of (season?.challenges ?? [])) {
+    const results = ch.results ?? {};
+    for (const id of ids) {
+      const status = (results[id] ?? {}).status ?? "open";
+      if (status === "success") { erfolge += 1; versuche += 1; }
+      else if (status === "fail") { versuche += 1; }
+    }
+  }
+
+  const rateRoh = versuche > 0 ? (erfolge / versuche) * 100 : null;
+  return { erfolge, versuche, rateRoh, rate: rateRoh === null ? null : Math.round(rateRoh) };
+}
+
+function renderSeasonHeader(doc, season, allChallenges, leaderboardRows, now) {
   const title = season?.name ?? "Boulder-Challenge";
   document.getElementById("seasonTitle").textContent = title;
   document.title = title;
@@ -655,20 +676,24 @@ function renderSeasonHeader(season, allChallenges, leaderboardRows, now) {
   // Stat-Strip
   const stripEl = document.getElementById("statStrip");
   if (stripEl) {
-    // Erfolgsrate: erfolgreiche / abgeschlossene Versuche
-    // (offene und "nicht möglich"-Einträge zählen nicht)
-    let successes = 0;
-    let attempts = 0;
-    for (const ch of allChallenges) {
-      const results = ch.results ?? {};
-      for (const r of Object.values(results)) {
-        const status = r?.status ?? "open";
-        if (status === "success") { successes += 1; attempts += 1; }
-        else if (status === "fail") { attempts += 1; }
-      }
-    }
-    const rate = attempts > 0 ? Math.round((successes / attempts) * 100) : 0;
-    const rateLabel = attempts > 0 ? `${rate}\u00a0%` : "–";
+    const jetzt = saisonErfolgsrate(season);
+    const rateLabel = jetzt.rate === null ? "\u2013" : `${jetzt.rate}\u00a0%`;
+
+    // Dieselbe Rate der Vorsaison als Vergleich
+    const vorher = vorherigeSaison(doc, season);
+    const vor = vorher ? saisonErfolgsrate(vorher) : null;
+    const zeigeVergleich = !!(vor && vor.rate !== null && jetzt.rate !== null);
+
+    const delta = zeigeVergleich ? Math.round(jetzt.rateRoh - vor.rateRoh) : null;
+    const vorName = vorher ? (vorher.shortName ?? vorher.name) : "";
+
+    const rateTitel = `${jetzt.erfolge} von ${jetzt.versuche} Versuchen`
+      + (zeigeVergleich
+          ? ` \u2014 ${vorName}: ${vor.rate} % (${vor.erfolge} von ${vor.versuche})`
+            + (delta === 0
+                ? ", gleich"
+                : `, ${Math.abs(delta)} Prozentpunkte ${delta > 0 ? "besser" : "schlechter"}`)
+          : "");
 
     stripEl.innerHTML = `
       <div class="statCell">
@@ -676,8 +701,9 @@ function renderSeasonHeader(season, allChallenges, leaderboardRows, now) {
         <div class="statL">Challenges</div>
       </div>
       <div class="statCell">
-        <div class="statV" title="${successes} von ${attempts} Versuchen">${rateLabel}</div>
+        <div class="statV" title="${safeText(rateTitel)}">${rateLabel}${zeigeVergleich ? renderDelta(delta) : ""}</div>
         <div class="statL">Erfolgsrate</div>
+        ${zeigeVergleich ? `<div class="statVor">${safeText(vorName)}: ${vor.rate}\u00a0%</div>` : ""}
       </div>
       <div class="statCell">
         <div class="statV">${openChallenges}</div>
@@ -907,7 +933,7 @@ function computeAndRenderAll(doc) {
   const readOnly = !!season?.archived;
 
   renderSeasonSwitcher(doc, season);
-  renderSeasonHeader(season, allChallenges, leaderboard, now);
+  renderSeasonHeader(doc, season, allChallenges, leaderboard, now);
   renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, pidToColor, now);
   renderAnalysis(doc, season, pidToColor);
   renderChallenges(challengesDesc, participants, pidToName, pidToColor, now, readOnly);
