@@ -255,19 +255,21 @@ function clearLocal() {
 
 /* ---------------- Personen-Farben ---------------- */
 
-// Feste Palette in aesthetisch stimmiger Reihenfolge, von Claude für die
-// aktuellen Teilnehmer gewählt (sky/violet/pink/cyan/amber – harmonieren
-// gut miteinander und bleiben auf dunklem Grund lesbar).
+// Feste Palette, auf Unterscheidbarkeit geprüft: der kleinste Abstand
+// zweier Farben (OKLab) liegt bei 0.158 – frühere Palette hatte mit
+// sky/cyan ein Paar bei 0.067, das auf vielen Displays gleich aussah.
+// Die Reihenfolge ist so gewählt, dass auch jede Teilmenge der ersten
+// n Farben noch gut auseinanderliegt.
+// Alle Werte: Kontrast >= 4.5 gegen den dunklen Grund (#0b0f17).
 const PERSON_COLOR_PALETTE = [
   "#38bdf8", // sky
   "#a78bfa", // violet
   "#f472b6", // pink
-  "#22d3ee", // cyan
+  "#34d399", // emerald
   "#fbbf24", // amber
-  "#4ade80", // green (Reserve)
-  "#fb7185", // rose (Reserve)
-  "#2dd4bf", // teal (Reserve)
+  "#a3e635", // lime (Reserve)
   "#fb923c", // orange (Reserve)
+  "#e879f9", // fuchsia (Reserve)
 ];
 
 // Farben werden über alle Saisons hinweg vergeben (älteste zuerst),

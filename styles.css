@@ -9,12 +9,8 @@
   --success:#22c55e;
   --fail:#ef4444;
 
-  /* Personen-Farben (5 Teilnehmer, per ID in JS zugewiesen) */
-  --p-dan:#38bdf8;   /* sky - ruhiger, souveräner Anker */
-  --p-geo:#a78bfa;   /* violet - intellektuell, präzise */
-  --p-flo:#f472b6;   /* pink - energisch, lebendig */
-  --p-mar:#22d3ee;   /* cyan - frisch, technisch */
-  --p-sab:#fbbf24;   /* amber - warm, sonnig */
+  /* Personen-Farben kommen aus PERSON_COLOR_PALETTE in app.js und
+     werden pro Zeile als --pColor gesetzt. */
 }
 
 *{ box-sizing: border-box; }
