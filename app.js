@@ -813,10 +813,18 @@ function gradProfil(doc, season) {
           jetzt: bilanz(proGrad(jetztMitGrad, g), p.id),
           vorher: warDabei ? bilanz(proGrad(vorherMitGrad, g), p.id) : null
         })),
-        gesamt: {
-          jetzt: bilanz(season?.challenges ?? [], p.id),
-          vorher: warDabei ? bilanz(vorher.challenges ?? [], p.id) : null
-        }
+        gesamt: (() => {
+          const jetzt = bilanz(season?.challenges ?? [], p.id);
+          const vor = warDabei ? bilanz(vorher.challenges ?? [], p.id) : null;
+          return {
+            jetzt,
+            vorher: vor,
+            // Differenz in Prozentpunkten, aus den ungerundeten Raten
+            rateDelta: (vor && jetzt.rateRoh !== null && vor.rateRoh !== null)
+              ? Math.round(jetzt.rateRoh - vor.rateRoh)
+              : null
+          };
+        })()
       };
     })
   };
@@ -965,10 +973,16 @@ function renderGradProfil(profil, pidToColor) {
           ? ` — ${profil.vorsaison}: ${g.vorher.erfolge} von ${g.vorher.versuche} · ${g.vorher.rate} %`
           : "");
 
+    const deltaTitel = g.rateDelta === null || g.rateDelta === 0
+      ? ""
+      : ` (${Math.abs(g.rateDelta)} Prozentpunkte ${g.rateDelta > 0 ? "besser" : "schlechter"})`;
+
     const gesamtZelle = `
-      <div class="gpCell gpCellGesamt" title="${safeText(titelGesamt)}">
+      <div class="gpCell gpCellGesamt" title="${safeText(titelGesamt + deltaTitel)}">
         ${g.jetzt.versuche ? `<span class="gpFill" style="width:${g.jetzt.rate}%"></span>` : ""}
-        <span class="gpTxt">${rate}</span>${rateVor ? `<span class="gpVor">${rateVor}</span>` : ""}
+        <span class="gpTop">
+          <span class="gpTxt">${rate}</span>${g.rateDelta !== null ? renderDelta(g.rateDelta) : ""}
+        </span>${rateVor ? `<span class="gpVor">${rateVor}</span>` : ""}
       </div>`;
 
     return `

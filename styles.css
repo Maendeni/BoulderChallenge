@@ -471,8 +471,17 @@ code{
 .gpVorLeer{ color: var(--line); }
 
 .gpHeadGesamt,
-.gpCellGesamt{ flex: 0 0 62px; max-width: 62px; }
+.gpCellGesamt{ flex: 0 0 78px; max-width: 78px; }
 .gpCellGesamt{ border-color: rgba(255,255,255,0.14); }
+
+/* Rate + Differenz zur Vorsaison in einer Zeile */
+.gpTop{
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  white-space: nowrap;
+}
 .gpFill{
   position: absolute;
   left: 0; top: 0; bottom: 0;
@@ -521,7 +530,7 @@ code{
   .gpTxt{ font-size: 10px; }
   .gpVor{ font-size: 9px; }
   .gpHeadGesamt,
-  .gpCellGesamt{ flex-basis: 52px; max-width: 52px; }
+  .gpCellGesamt{ flex-basis: 66px; max-width: 66px; }
   .pvRow{ gap: 5px; }
   .pvItem{ padding: 4px 8px; gap: 3px; }
 }
