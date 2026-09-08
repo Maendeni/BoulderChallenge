@@ -6,7 +6,7 @@
       "id": "2026-27",
       "name": "Boulder-Challenge 26/27",
       "shortName": "26/27",
-      "start": "2026-08-26",
+      "start": "2026-08-24",
       "totalChallenges": 30,
       "archived": false,
       "participants": [
@@ -108,10 +108,6 @@
             },
             "Mar": {
               "status": "fail",
-              "when": ""
-            },
-            "Sab": {
-              "status": "open",
               "when": ""
             }
           }
