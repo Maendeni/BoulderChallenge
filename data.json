@@ -29,6 +29,34 @@
       ],
       "challenges": [
         {
+          "id": "2026-09-17",
+          "date": "2026-09-17",
+          "label": "KW 38",
+          "route": "Schwarz Weiss Melange Queergang beim Eingang",
+          "grade": 8,
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "Nur was für Flachland Kletterer..",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "success",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
           "id": "2026-09-07",
           "date": "2026-09-07",
           "label": "KW 37",
