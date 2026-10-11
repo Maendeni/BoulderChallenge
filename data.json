@@ -29,6 +29,62 @@
       ],
       "challenges": [
         {
+          "id": "2026-10-08",
+          "date": "2026-10-08",
+          "label": "KW 41",
+          "route": "Pinke kleingriffige und steile Route",
+          "grade": 8,
+          "setBy": "Dan",
+          "removedFrom": "2026-10-11",
+          "notes": "Het nid viel gfählt bi Dan..",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "open",
+              "when": ""
+            },
+            "Flo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
+          "id": "2026-10-01",
+          "date": "2026-10-01",
+          "label": "KW 40",
+          "route": "Schwarz am Würfel alte Halle",
+          "grade": 7,
+          "setBy": "Flo",
+          "removedFrom": null,
+          "notes": "Schwierig zum letzten Griff zu kommen..",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "open",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": "makeup"
+            }
+          }
+        },
+        {
           "id": "2026-09-17",
           "date": "2026-09-17",
           "label": "KW 38",
