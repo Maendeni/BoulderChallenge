@@ -29,6 +29,34 @@
       ],
       "challenges": [
         {
+          "id": "2026-10-12",
+          "date": "2026-10-12",
+          "label": "KW 42",
+          "route": "Grüne Route in neuer Halle hinten rechts mit Jump",
+          "grade": 7,
+          "setBy": "Mar",
+          "removedFrom": null,
+          "notes": "",
+          "results": {
+            "Dan": {
+              "status": "success",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "success",
+              "when": ""
+            }
+          }
+        },
+        {
           "id": "2026-10-08",
           "date": "2026-10-08",
           "label": "KW 41",
@@ -43,8 +71,8 @@
               "when": ""
             },
             "Geo": {
-              "status": "open",
-              "when": ""
+              "status": "fail",
+              "when": "makeup"
             },
             "Flo": {
               "status": "fail",
@@ -71,8 +99,8 @@
               "when": ""
             },
             "Geo": {
-              "status": "open",
-              "when": ""
+              "status": "fail",
+              "when": "makeup"
             },
             "Flo": {
               "status": "success",
