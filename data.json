@@ -29,6 +29,34 @@
       ],
       "challenges": [
         {
+          "id": "2026-10-26",
+          "date": "2026-10-26",
+          "label": "KW 44",
+          "route": "Gelbe mit schwierigen letzten Zügen am Würfel",
+          "grade": 7,
+          "setBy": "Geo",
+          "removedFrom": null,
+          "notes": "Fast häts meh Pünkt gäh.. 🙈",
+          "results": {
+            "Dan": {
+              "status": "fail",
+              "when": ""
+            },
+            "Geo": {
+              "status": "fail",
+              "when": ""
+            },
+            "Flo": {
+              "status": "success",
+              "when": ""
+            },
+            "Mar": {
+              "status": "fail",
+              "when": ""
+            }
+          }
+        },
+        {
           "id": "2026-10-12",
           "date": "2026-10-12",
           "label": "KW 42",
