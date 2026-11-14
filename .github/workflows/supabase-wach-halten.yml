@@ -1,0 +1,36 @@
+# Gratis-Projekte bei Supabase pausieren nach 7 Tagen ohne Datenbank-Zugriff.
+# Dieser Job fragt die Datenbank zweimal pro Woche kurz an und hält sie so wach.
+# Solange config.js leer ist, tut er nichts.
+name: Supabase wach halten
+
+on:
+  schedule:
+    - cron: "17 6 * * 1,4"   # Montag + Donnerstag, 06:17 UTC
+  workflow_dispatch:          # zum Testen: Actions → "Supabase wach halten" → Run workflow
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Datenbank anfragen
+        run: |
+          node -e '
+            global.window = {};
+            require("vm").runInThisContext(require("fs").readFileSync("config.js", "utf8"));
+            const c = window.BOULDER_CONFIG || {};
+            if (!c.supabaseUrl || !c.supabaseAnonKey) {
+              console.log("config.js ist leer – keine Datenbank eingerichtet, nichts zu tun.");
+              process.exit(0);
+            }
+            fetch(c.supabaseUrl + "/rest/v1/challenges?select=id&limit=1", { method: "GET", headers: { apikey: c.supabaseAnonKey } })
+              .then(async r => {
+                console.log("Antwort:", r.status);
+                if (!r.ok) { console.log(await r.text()); process.exit(1); }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          '

@@ -1092,3 +1092,56 @@ code{
   .rcName{ font-size: 9.5px; }
   .challengeBody{ padding: 0 12px 12px; }
 }
+
+/* ---- Datenbank: Status, Anmeldung, Protokoll ---- */
+.toast button[hidden],
+.btn[hidden], .btnPrimary[hidden],
+.field[hidden],
+.adminBlock[hidden]{ display: none; }
+
+.dbStatus{
+  margin-top: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface2);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dbStatus[hidden]{ display: none; }
+.dbStatus:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+.dbStatusFehler{ color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); }
+
+.loginDialog{
+  width: min(380px, calc(100% - 28px));
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+}
+.loginDialog::backdrop{ background: rgba(0, 0, 0, 0.6); }
+.loginDialog form{ display: flex; flex-direction: column; gap: 12px; }
+.loginDialog .adminActions{ margin-top: 2px; }
+.loginFehler{ margin: 0; color: var(--fail); font-size: 13px; }
+.loginFehler[hidden]{ display: none; }
+
+.verlauf{ display: flex; flex-direction: column; gap: 6px; }
+.verlaufZeile{
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 4px 10px;
+  align-items: baseline;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.verlaufWann{ color: var(--muted); font-variant-numeric: tabular-nums; }
+.verlaufWer{ font-weight: 600; }
+.verlaufWas{ min-width: 0; overflow-wrap: anywhere; }

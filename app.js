@@ -169,6 +169,27 @@ function isArchived() {
   return !!window.__SEASON__?.archived;
 }
 
+/* ---------------- Datenbank-Modus ---------------- */
+
+// "lokal":     wie bisher – data.json + localStorage + JSON-Export
+// "db":        laufende Saisons aus Supabase, Änderungen direkt gespeichert
+// "db-fehler": DB eingerichtet, aber nicht erreichbar → nur Anzeige aus data.json
+window.__MODUS__ = "lokal";
+
+function dbModus() { return window.__MODUS__ === "db"; }
+function nurAnzeige() { return window.__MODUS__ === "db-fehler"; }
+
+// Archivierte Saison oder DB weg: keine Änderungen möglich
+function istGesperrt() { return isArchived() || nurAnzeige(); }
+
+// Im DB-Modus braucht jede Änderung Anmeldung + Namen; sonst Dialog öffnen
+function schreibbereit() {
+  if (!dbModus()) return true;
+  if (BoulderDB.angemeldet() && BoulderDB.wer()) return true;
+  oeffneLogin();
+  return false;
+}
+
 // URL-Parameter > Auswahl in diesem Tab > aktuelle Saison aus data.json
 function resolveInitialSeasonId(doc) {
   const ids = new Set((doc?.seasons ?? []).map(s => s.id));
@@ -484,7 +505,7 @@ window.__editingChallengeId = null;
 function startEditChallenge(chId) {
   try {
     const season = window.__SEASON__;
-    if (!season || isArchived()) return;
+    if (!season || istGesperrt()) return;
     const participants = season.participants ?? [];
     const ch = (season.challenges ?? []).find(c => c.id === chId);
     if (!ch) return;
@@ -551,7 +572,8 @@ function wireChipTap() {
 function cycleChallengeStatus(chId, pid) {
   const doc = window.__DATA__;
   const season = window.__SEASON__;
-  if (!doc || !season || isArchived()) return;
+  if (!doc || !season || istGesperrt()) return;
+  if (!schreibbereit()) return;
   const ch = (season.challenges ?? []).find(c => c.id === chId);
   if (!ch) return;
   ch.results = ch.results ?? {};
@@ -567,7 +589,8 @@ function cycleChallengeStatus(chId, pid) {
   ch.results[pid] = next;
 
   // Persistieren und neu rendern
-  saveLocal(doc);
+  if (dbModus()) speichereErgebnisInDb(season.id, chId, pid, next, prev);
+  else saveLocal(doc);
 
   // Feedback
   if (navigator.vibrate) { try { navigator.vibrate(8); } catch {} }
@@ -580,12 +603,32 @@ function cycleChallengeStatus(chId, pid) {
     const s = getActiveSeason(d);
     const c = (s?.challenges ?? []).find(x => x.id === chId);
     if (!c) return;
-    c.results[pid] = window.__lastChipChange.prev;
-    saveLocal(d);
+    const zurueck = window.__lastChipChange.prev;
+    const vorUndo = c.results[pid];
+    c.results[pid] = zurueck;
+    if (dbModus()) speichereErgebnisInDb(s.id, chId, pid, zurueck, vorUndo);
+    else saveLocal(d);
     computeAndRenderAll(d);
   });
 
   computeAndRenderAll(doc);
+}
+
+// Optimistisch: die Anzeige ist schon umgeschaltet. Schlägt das
+// Speichern fehl, wird der alte Stand wiederhergestellt.
+async function speichereErgebnisInDb(seasonId, chId, pid, neu, alt) {
+  try {
+    await BoulderDB.speichereErgebnis(seasonId, chId, pid, neu);
+  } catch (err) {
+    console.error(err);
+    const s = (window.__DATA__?.seasons ?? []).find(x => x.id === seasonId);
+    const c = (s?.challenges ?? []).find(x => x.id === chId);
+    if (c && c.results?.[pid] === neu) {
+      c.results[pid] = alt;
+      computeAndRenderAll(window.__DATA__);
+    }
+    showToast(`Nicht gespeichert: ${BoulderDB.fehlerText(err)}`);
+  }
 }
 
 /* ---------------- Toast ---------------- */
@@ -604,6 +647,8 @@ function showToast(msg, undoHandler) {
   // Undo handler frisch setzen (alte Listener entfernen)
   const newBtn = toastUndo.cloneNode(true);
   toastUndo.parentNode.replaceChild(newBtn, toastUndo);
+  // Reine Meldungen (z.B. Fehler) ohne Rückgängig-Knopf
+  newBtn.hidden = typeof undoHandler !== "function";
   newBtn.addEventListener("click", () => {
     if (typeof undoHandler === "function") undoHandler();
     hideToast();
@@ -930,8 +975,9 @@ function computeAndRenderAll(doc) {
     now
   );
 
-  const readOnly = !!season?.archived;
+  const readOnly = !!season?.archived || nurAnzeige();
 
+  renderDbStatus();
   renderSeasonSwitcher(doc, season);
   renderSeasonHeader(doc, season, allChallenges, leaderboard, now);
   renderLeaderboardMatrix(leaderboard, challengesAsc, participants, pidToName, pidToColor, now);
@@ -1236,15 +1282,19 @@ function emptyDraft(participants) {
 const ADMIN_FIELD_IDS = ["admDate", "admLabel", "admRoute", "admGrade", "admSetBy", "admRemovedFrom", "admNotes", "admAdd"];
 
 function renderAdmin(doc, season, participants) {
-  const archived = !!season?.archived;
+  const archived = !!season?.archived || nurAnzeige();
 
   const note = document.getElementById("admArchivedNote");
   if (note) {
     note.hidden = !archived;
-    note.textContent = archived
-      ? `„${season?.name ?? "Diese Saison"}“ ist archiviert – Bearbeiten ist deaktiviert. Oben auf die laufende Saison wechseln, um Challenges zu erfassen.`
-      : "";
+    note.textContent = nurAnzeige()
+      ? `Datenbank nicht erreichbar (${window.__DB_FEHLER__ ?? "unbekannter Fehler"}) – Erfassen ist gerade nicht möglich.`
+      : archived
+        ? `„${season?.name ?? "Diese Saison"}“ ist archiviert – Bearbeiten ist deaktiviert. Oben auf die laufende Saison wechseln, um Challenges zu erfassen.`
+        : "";
   }
+
+  renderAdminModus(season);
 
   const setBy = document.getElementById("admSetBy");
   if (setBy) setBy.innerHTML = participants.map(p => `<option value="${safeText(p.id)}">${safeText(p.name)}</option>`).join("");
@@ -1308,10 +1358,10 @@ function wireAdminHandlers() {
   }
 
   if (btnAdd) {
-    btnAdd.addEventListener("click", () => {
+    btnAdd.addEventListener("click", async () => {
       const doc = window.__DATA__;
       const season = window.__SEASON__;
-      if (!doc || !season || isArchived()) return;
+      if (!doc || !season || istGesperrt()) return;
 
       const participants = activeParticipants();
       const draft = readDraftFromUi(participants);
@@ -1320,6 +1370,8 @@ function wireAdminHandlers() {
         alert("Bitte mindestens Datum, Route und 'Definiert von' ausfüllen.");
         return;
       }
+
+      if (dbModus() && !schreibbereit()) return;
 
       const updatedChallenge = {
         id: draft.date,
@@ -1332,6 +1384,31 @@ function wireAdminHandlers() {
         notes: draft.notes || "",
         results: draft.results
       };
+
+      // DB-Modus: direkt speichern, danach frisch aus der DB laden
+      if (dbModus()) {
+        btnAdd.disabled = true;
+        try {
+          await BoulderDB.speichereChallenge(season.id, updatedChallenge, window.__editingChallengeId);
+        } catch (err) {
+          console.error(err);
+          alert(`Nicht gespeichert: ${BoulderDB.fehlerText(err)}`);
+          return;
+        } finally {
+          btnAdd.disabled = false;
+        }
+        window.__editingChallengeId = null;
+        btnAdd.textContent = "Challenge hinzufügen";
+        const fresh = emptyDraft(participants);
+        fresh.date = draft.date;
+        const w = getIsoWeek(draft.date);
+        fresh.label = w ? `KW ${String(w).padStart(2, "0")}` : "";
+        fresh.setBy = draft.setBy;
+        saveDraft(fresh);
+        showToast(`Gespeichert: ${updatedChallenge.route}`);
+        await neuLaden();
+        return;
+      }
 
       season.challenges = season.challenges ?? [];
 
@@ -1484,6 +1561,7 @@ function switchTab(name) {
   document.querySelectorAll(".tabPanel").forEach(p => {
     p.hidden = (p.id !== `tab-${name}`);
   });
+  if (name === "admin") renderVerlauf();
   // Nach oben scrollen innerhalb des Tabs
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1494,17 +1572,322 @@ function wireTabs() {
   });
 }
 
+/* ---------------- Datenbank: Laden, Anmelden, Protokoll ---------------- */
+
+// data.json liefert immer Saisons, Teilnehmer und Archiv.
+// Mit Datenbank kommen die Challenges der laufenden Saisons aus Supabase.
+async function ladeDokument() {
+  const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
+  const remote = migrateData(await res.json());
+  const lokal = mergeLocalIntoRemote(remote, loadLocalDoc());
+
+  if (!BoulderDB.konfiguriert) {
+    window.__MODUS__ = "lokal";
+    return lokal;
+  }
+
+  // Stand aus data.json + diesem Browser, für die einmalige Übernahme
+  window.__JSON_STAND__ = lokal;
+
+  if (!BoulderDB.aktiv) {
+    window.__MODUS__ = "db-fehler";
+    window.__DB_FEHLER__ = "Supabase-Bibliothek nicht geladen";
+    return remote;
+  }
+
+  try {
+    const laufende = (remote.seasons ?? []).filter(s => !s.archived).map(s => s.id);
+    const ausDb = await BoulderDB.ladeChallenges(laufende);
+    window.__MODUS__ = "db";
+    window.__DB_FEHLER__ = null;
+    return {
+      ...remote,
+      seasons: (remote.seasons ?? []).map(s =>
+        s.archived ? s : { ...s, challenges: ausDb[s.id] ?? [] })
+    };
+  } catch (err) {
+    console.error(err);
+    window.__MODUS__ = "db-fehler";
+    window.__DB_FEHLER__ = BoulderDB.fehlerText(err);
+    return remote;
+  }
+}
+
+async function neuLaden() {
+  const doc = await ladeDokument();
+  computeAndRenderAll(doc);
+}
+
+function nameVon(pid) {
+  for (const s of (window.__DATA__?.seasons ?? [])) {
+    const p = (s.participants ?? []).find(x => x.id === pid);
+    if (p) return p.name;
+  }
+  return pid ?? "?";
+}
+
+function renderDbStatus() {
+  const el = document.getElementById("dbStatus");
+  if (!el) return;
+
+  if (window.__MODUS__ === "lokal") { el.hidden = true; return; }
+  el.hidden = false;
+  el.classList.toggle("dbStatusFehler", nurAnzeige());
+
+  if (nurAnzeige()) {
+    el.textContent = "⚠️ Datenbank nicht erreichbar – nur Anzeige · neu versuchen";
+  } else if (BoulderDB.angemeldet() && BoulderDB.wer()) {
+    el.textContent = `✎ Erfassen als ${nameVon(BoulderDB.wer())} · ändern`;
+  } else {
+    el.textContent = "🔒 Zum Erfassen anmelden";
+  }
+
+  if (!el.dataset.wired) {
+    el.dataset.wired = "1";
+    el.addEventListener("click", () => {
+      if (nurAnzeige()) neuLaden();
+      else oeffneLogin();
+    });
+  }
+}
+
+function oeffneLogin() {
+  const dlg = document.getElementById("loginDialog");
+  if (!dlg) return;
+
+  const angemeldet = BoulderDB.angemeldet();
+  const participants = activeParticipants();
+  const sel = document.getElementById("loginWer");
+  sel.innerHTML = `<option value="">– bitte wählen –</option>`
+    + participants.map(p => `<option value="${safeText(p.id)}">${safeText(p.name)}</option>`).join("");
+  sel.value = participants.some(p => p.id === BoulderDB.wer()) ? BoulderDB.wer() : "";
+
+  // Schon angemeldet: nur noch die Person wählen
+  document.getElementById("loginPwFeld").hidden = angemeldet;
+  document.getElementById("loginPw").value = "";
+  document.getElementById("loginTitel").textContent = angemeldet ? "Wer erfasst?" : "Zum Erfassen anmelden";
+  document.getElementById("loginOk").textContent = angemeldet ? "Übernehmen" : "Anmelden";
+  document.getElementById("loginAbmelden").hidden = !angemeldet;
+  document.getElementById("loginFehler").hidden = true;
+
+  if (typeof dlg.showModal === "function") dlg.showModal();
+  else dlg.setAttribute("open", "");
+}
+
+function schliesseLogin() {
+  const dlg = document.getElementById("loginDialog");
+  if (!dlg) return;
+  if (typeof dlg.close === "function") dlg.close();
+  else dlg.removeAttribute("open");
+}
+
+function wireLogin() {
+  const form = document.getElementById("loginForm");
+  if (!form) return;
+
+  const fehler = msg => {
+    const el = document.getElementById("loginFehler");
+    el.textContent = msg;
+    el.hidden = false;
+  };
+
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const wer = document.getElementById("loginWer").value;
+    const pw = document.getElementById("loginPw").value;
+    if (!wer) { fehler("Bitte wählen, wer du bist."); return; }
+
+    const btn = document.getElementById("loginOk");
+    if (!BoulderDB.angemeldet()) {
+      if (!pw) { fehler("Bitte das Gruppen-Passwort eingeben."); return; }
+      btn.disabled = true;
+      try {
+        await BoulderDB.anmelden(pw);
+      } catch (err) {
+        fehler(BoulderDB.fehlerText(err));
+        return;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    BoulderDB.setzeWer(wer);
+    schliesseLogin();
+    computeAndRenderAll(window.__DATA__);
+  });
+
+  document.getElementById("loginAbbrechen").addEventListener("click", schliesseLogin);
+
+  document.getElementById("loginAbmelden").addEventListener("click", async () => {
+    await BoulderDB.abmelden();
+    schliesseLogin();
+    computeAndRenderAll(window.__DATA__);
+  });
+}
+
+// Admin-Tab: Texte und Bereiche je nach Modus
+function renderAdminModus(season) {
+  const db = window.__MODUS__ !== "lokal";
+  const hinweis = document.getElementById("admModusHinweis");
+  if (hinweis) {
+    hinweis.innerHTML = db
+      ? "Änderungen werden direkt in der Datenbank gespeichert – für alle sofort sichtbar."
+      : "Änderungen werden als JSON kopiert und in GitHub in <code>data.json</code> eingefügt.";
+  }
+
+  const reset = document.getElementById("admResetLocal");
+  if (reset) reset.hidden = db;
+
+  const titel = document.getElementById("admJsonTitel");
+  if (titel) titel.textContent = db ? "Backup / Saison archivieren (data.json)" : "Vorschau (data.json)";
+  const tipp = document.getElementById("admJsonTipp");
+  if (tipp) {
+    tipp.innerHTML = db
+      ? "Zum Archivieren einer Saison: JSON kopieren → in GitHub <code>data.json</code> ersetzen, bei der Saison <code>\"archived\": true</code> setzen → Commit."
+      : "Tipp: Alles im Textfeld kopieren → GitHub <code>data.json</code> ersetzen → Commit.";
+  }
+
+  const footer = document.getElementById("footerText");
+  if (footer) {
+    footer.innerHTML = dbModus()
+      ? "Privater Wettbewerb · Live-Daten aus der Datenbank, Archiv aus <code>data.json</code>"
+      : "Privater Wettbewerb · Daten aus <code>data.json</code>";
+  }
+
+  renderImportAngebot(season);
+  renderVerlauf();
+}
+
+// Laufende Saison ist in der DB noch leer, data.json hat aber schon Challenges
+function renderImportAngebot(season) {
+  const block = document.getElementById("admImportBlock");
+  if (!block) return;
+
+  const quelle = (window.__JSON_STAND__?.seasons ?? []).find(s => s.id === season?.id);
+  const anzahl = (quelle?.challenges ?? []).length;
+  const zeigen = dbModus() && season && !season.archived
+    && (season.challenges ?? []).length === 0 && anzahl > 0;
+
+  block.hidden = !zeigen;
+  if (!zeigen) return;
+
+  document.getElementById("admImportText").textContent =
+    `Die Datenbank ist für „${season.name}“ noch leer. ${anzahl} ${plural(anzahl, "Challenge", "Challenges")} `
+    + `aus data.json (inkl. lokaler Änderungen in diesem Browser) einmalig übernehmen?`;
+
+  const btn = document.getElementById("admImport");
+  if (!btn.dataset.wired) {
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", async () => {
+      if (!schreibbereit()) return;
+      const s = window.__SEASON__;
+      const q = (window.__JSON_STAND__?.seasons ?? []).find(x => x.id === s?.id);
+      if (!q) return;
+      btn.disabled = true;
+      try {
+        await BoulderDB.importiereSaison(s.id, q.challenges ?? []);
+        showToast("Saison übernommen");
+        await neuLaden();
+      } catch (err) {
+        console.error(err);
+        alert(`Übernahme fehlgeschlagen: ${BoulderDB.fehlerText(err)}`);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+}
+
+function fmtZeitpunkt(ts) {
+  const d = new Date(ts);
+  if (isNaN(d)) return "";
+  const p = n => String(n).padStart(2, "0");
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}. ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// Eine Protokollzeile in Klartext
+function verlaufText(e) {
+  const alt = e.old_data ?? {};
+  const neu = e.new_data ?? {};
+  const season = (window.__DATA__?.seasons ?? []).find(s => s.id === e.season_id);
+  const ch = (season?.challenges ?? []).find(c => c.id === e.challenge_id);
+  const chName = ch ? (getWeekLabel(ch) || fmtDateDE(ch.date)) : fmtDateDE(e.challenge_id);
+
+  if (e.table_name === "results") {
+    const icon = r => statusToIcon(r?.status ?? "open", r?.when_type ?? "", false);
+    const von = e.action === "INSERT" ? "" : `${icon(alt)} → `;
+    return `${chName} · ${nameVon(e.participant_id)}: ${von}${icon(neu)}`;
+  }
+
+  if (e.action === "INSERT") return `${chName} erfasst: ${neu.route ?? ""}`;
+
+  const felder = [
+    ["route", "Route"], ["date", "Datum"], ["label", "Label"], ["grade", "Grad"],
+    ["set_by", "Definiert von"], ["removed_from", "Entfernt ab"], ["notes", "Notiz"]
+  ];
+  const wert = (k, v) => {
+    if (v == null || v === "") return "–";
+    if (k === "set_by") return nameVon(v);
+    if (k === "date" || k === "removed_from") return fmtDateDE(v);
+    return String(v);
+  };
+  const diffs = felder
+    .filter(([k]) => String(alt[k] ?? "") !== String(neu[k] ?? ""))
+    .map(([k, l]) => `${l} ${wert(k, alt[k])} → ${wert(k, neu[k])}`);
+  return `${chName} geändert: ${diffs.join(", ") || "–"}`;
+}
+
+async function renderVerlauf() {
+  const block = document.getElementById("admVerlaufBlock");
+  const el = document.getElementById("admVerlauf");
+  if (!block || !el) return;
+
+  const zeigen = dbModus() && BoulderDB.angemeldet();
+  block.hidden = !zeigen;
+  if (!zeigen) return;
+
+  // Nur laden, wenn der Admin-Tab offen ist – nicht bei jedem Chip-Tipp
+  if (document.getElementById("tab-admin")?.hidden) return;
+
+  try {
+    // Neu angelegte, noch offene Ergebnisse sind Grundrauschen – weglassen
+    const eintraege = (await BoulderDB.ladeVerlauf(80))
+      .filter(e => !(e.table_name === "results" && e.action === "INSERT" && (e.new_data?.status ?? "open") === "open"))
+      .slice(0, 50);
+
+    el.innerHTML = eintraege.length
+      ? eintraege.map(e => `
+          <div class="verlaufZeile">
+            <span class="verlaufWann">${safeText(fmtZeitpunkt(e.changed_at))}</span>
+            <span class="verlaufWer">${safeText(nameVon(e.changed_by))}</span>
+            <span class="verlaufWas">${safeText(verlaufText(e))}</span>
+          </div>`).join("")
+      : `<p class="muted">Noch keine Änderungen.</p>`;
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = `<p class="muted">Protokoll nicht ladbar: ${safeText(BoulderDB.fehlerText(err))}</p>`;
+  }
+}
+
 /* ---------------- Boot ---------------- */
 
 async function main() {
   wireTabs();
+  wireLogin();
+  await BoulderDB.init();
 
-  const res = await fetch(`data.json?v=${Date.now()}`, { cache: "no-store" });
-  const remote = migrateData(await res.json());
-  const doc = mergeLocalIntoRemote(remote, loadLocalDoc());
+  const doc = await ladeDokument();
 
   window.__SEASON_ID__ = resolveInitialSeasonId(doc);
   computeAndRenderAll(doc);
+
+  // Zurück in die App (z.B. nach dem Bouldern): frischen Stand holen,
+  // damit man sieht, was die anderen inzwischen erfasst haben
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (window.__MODUS__ === "lokal" || window.__editingChallengeId) return;
+    neuLaden().catch(err => console.error(err));
+  });
 }
 
 main().catch(err => {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0f17" />
   <title>Boulder-Challenge</title>
-  <link rel="stylesheet" href="styles.css?v=20260908d" />
+  <link rel="stylesheet" href="styles.css?v=20261113a" />
 </head>
 <body>
   <header class="container header">
@@ -17,6 +17,7 @@
     <p class="muted" id="seasonMeta">Stand: –</p>
     <div class="seasonBar" aria-hidden="true"><div id="seasonBarFill"></div></div>
     <div class="statStrip" id="statStrip"></div>
+    <button class="dbStatus" id="dbStatus" type="button" hidden></button>
   </header>
 
   <nav class="container tabBar" role="tablist" aria-label="Ansicht">
@@ -37,7 +38,15 @@
 
     <section class="tabPanel" id="tab-admin" role="tabpanel" aria-label="Admin" hidden>
       <p class="adminNote" id="admArchivedNote" hidden></p>
-      <p class="muted">Änderungen werden als JSON kopiert und in GitHub in <code>data.json</code> eingefügt.</p>
+      <p class="muted" id="admModusHinweis">Änderungen werden als JSON kopiert und in GitHub in <code>data.json</code> eingefügt.</p>
+
+      <div class="adminBlock" id="admImportBlock" hidden>
+        <div class="adminBlockTitle">Saison in die Datenbank übernehmen</div>
+        <p class="muted" id="admImportText"></p>
+        <div class="adminActions">
+          <button id="admImport" class="btnPrimary" type="button">Übernehmen</button>
+        </div>
+      </div>
 
       <div class="adminGrid">
         <label class="field">
@@ -97,15 +106,20 @@
       </div>
 
       <div class="adminBlock">
-        <div class="adminBlockTitle">Vorschau (data.json)</div>
+        <div class="adminBlockTitle" id="admJsonTitel">Vorschau (data.json)</div>
         <textarea id="admJson" class="adminTextarea" rows="10" spellcheck="false"></textarea>
-        <p class="muted">Tipp: Alles im Textfeld kopieren → GitHub <code>data.json</code> ersetzen → Commit.</p>
+        <p class="muted" id="admJsonTipp">Tipp: Alles im Textfeld kopieren → GitHub <code>data.json</code> ersetzen → Commit.</p>
+      </div>
+
+      <div class="adminBlock" id="admVerlaufBlock" hidden>
+        <div class="adminBlockTitle">Änderungsprotokoll (letzte 50)</div>
+        <div id="admVerlauf" class="verlauf"></div>
       </div>
     </section>
   </main>
 
   <footer class="container footer">
-    <p class="muted">Privater Wettbewerb · Daten aus <code>data.json</code></p>
+    <p class="muted" id="footerText">Privater Wettbewerb · Daten aus <code>data.json</code></p>
   </footer>
 
   <!-- Undo-Toast -->
@@ -114,6 +128,31 @@
     <button id="toastUndo" type="button">Rückgängig</button>
   </div>
 
-  <script src="app.js?v=20260908d" defer></script>
+  <!-- Anmeldedialog (nur mit Datenbank) -->
+  <dialog id="loginDialog" class="loginDialog">
+    <form id="loginForm" method="dialog">
+      <h2 id="loginTitel">Zum Erfassen anmelden</h2>
+      <label class="field">
+        <span>Wer bist du?</span>
+        <select id="loginWer"></select>
+      </label>
+      <label class="field" id="loginPwFeld">
+        <span>Gruppen-Passwort</span>
+        <input id="loginPw" type="password" autocomplete="current-password" />
+      </label>
+      <p class="loginFehler" id="loginFehler" hidden></p>
+      <p class="muted">Dein Name steht bei jeder Änderung im Protokoll.</p>
+      <div class="adminActions">
+        <button id="loginOk" class="btnPrimary" type="submit">Anmelden</button>
+        <button id="loginAbbrechen" class="btn" type="button">Abbrechen</button>
+        <button id="loginAbmelden" class="btn" type="button" hidden>Abmelden</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" defer></script>
+  <script src="config.js?v=20261113a" defer></script>
+  <script src="db.js?v=20261113a" defer></script>
+  <script src="app.js?v=20261113a" defer></script>
 </body>
 </html>
